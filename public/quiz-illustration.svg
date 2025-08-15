@@ -1,0 +1,72 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#f0f9ff;stop-opacity:0.9" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" fill="url(#bgGradient)"/>
+  
+  <!-- Floating cards -->
+  <g transform="translate(50, 80)">
+    <!-- Card 1 -->
+    <rect x="0" y="0" width="120" height="80" rx="12" fill="url(#cardGradient)" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="25" cy="25" r="8" fill="#0ea5e9"/>
+    <rect x="20" y="40" width="80" height="4" rx="2" fill="#64748b"/>
+    <rect x="20" y="50" width="60" height="4" rx="2" fill="#64748b"/>
+    <rect x="20" y="60" width="70" height="4" rx="2" fill="#64748b"/>
+  </g>
+  
+  <g transform="translate(200, 120)">
+    <!-- Card 2 -->
+    <rect x="0" y="0" width="100" height="70" rx="10" fill="url(#cardGradient)" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="20" cy="20" r="6" fill="#3b82f6"/>
+    <rect x="15" y="35" width="70" height="3" rx="1.5" fill="#64748b"/>
+    <rect x="15" y="42" width="50" height="3" rx="1.5" fill="#64748b"/>
+    <rect x="15" y="49" width="65" height="3" rx="1.5" fill="#64748b"/>
+  </g>
+  
+  <g transform="translate(80, 200)">
+    <!-- Card 3 -->
+    <rect x="0" y="0" width="110" height="75" rx="11" fill="url(#cardGradient)" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="22" cy="22" r="7" fill="#6366f1"/>
+    <rect x="18" y="38" width="75" height="3.5" rx="1.75" fill="#64748b"/>
+    <rect x="18" y="45" width="55" height="3.5" rx="1.75" fill="#64748b"/>
+    <rect x="18" y="52" width="68" height="3.5" rx="1.75" fill="#64748b"/>
+  </g>
+  
+  <!-- Central brain/lightbulb icon -->
+  <g transform="translate(160, 140)">
+    <!-- Lightbulb base -->
+    <ellipse cx="40" cy="80" rx="15" ry="8" fill="#fbbf24"/>
+    <rect x="35" y="80" width="10" height="15" rx="5" fill="#fbbf24"/>
+    
+    <!-- Lightbulb body -->
+    <path d="M40 20 Q60 20 70 40 Q70 60 40 80 Q10 60 10 40 Q10 20 40 20" fill="#fef3c7" stroke="#fbbf24" stroke-width="2"/>
+    
+    <!-- Brain waves -->
+    <path d="M20 30 Q25 25 30 30 Q35 35 40 30 Q45 25 50 30 Q55 35 60 30" stroke="#0ea5e9" stroke-width="2" fill="none"/>
+    <path d="M20 45 Q25 40 30 45 Q35 50 40 45 Q45 40 50 45 Q55 50 60 45" stroke="#3b82f6" stroke-width="2" fill="none"/>
+    <path d="M20 60 Q25 55 30 60 Q35 65 40 60 Q45 55 50 60 Q55 65 60 60" stroke="#6366f1" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Floating particles -->
+  <circle cx="80" cy="60" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="320" cy="100" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="280" cy="280" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="120" cy="320" r="2.5" fill="#ffffff" opacity="0.5"/>
+  <circle cx="350" cy="200" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="50" cy="280" r="2" fill="#ffffff" opacity="0.6"/>
+  
+  <!-- Decorative lines -->
+  <path d="M0 150 Q100 140 200 150 Q300 160 400 150" stroke="#ffffff" stroke-width="1" opacity="0.3" fill="none"/>
+  <path d="M0 250 Q100 240 200 250 Q300 260 400 250" stroke="#ffffff" stroke-width="1" opacity="0.3" fill="none"/>
+</svg>
