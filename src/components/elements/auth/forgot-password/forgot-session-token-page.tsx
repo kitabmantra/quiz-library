@@ -11,6 +11,7 @@ import { useSessionToken } from '@/lib/hooks/params/useSessionToken'
 import { useCheckForgotPasswordSession } from '@/lib/hooks/tanstack-query/query-hook/auth/forgot-password/use-check-forgot-password-session'
 import { resetForgotPassword } from '@/lib/actions/auth/forgot-password/post/verify-forgot-password-otp'
 import { deleteClientCookie } from '@/lib/utils/client-cookies'
+import { delete_cookies } from '@/lib/utils/get-cookie'
 
 type VerificationState = 'idle' | 'loading' | 'success' | 'error'
 
@@ -211,7 +212,7 @@ function ForgotSessionTokenPage() {
         if (result.success) {
           setState('success')
           setMessage('Password reset successfully! Redirecting to login...')
-          deleteClientCookie("forgot_email")
+          await delete_cookies("forgot_email")
           setTimeout(() => {
             router.push('/login')
           }, 2000)
