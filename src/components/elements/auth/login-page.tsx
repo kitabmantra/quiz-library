@@ -110,7 +110,7 @@ function LoginPage() {
                     />
                     <span className="text-sm text-sky-700">Remember me</span>
                   </label>
-                  <Link href="/forgot-password" className="text-sm text-sky-600 hover:text-sky-800 underline">
+                  <Link href="/login/forgot-password" className="text-sm text-sky-600 hover:text-sky-800 underline">
                     Forgot password?
                   </Link>
                 </div>

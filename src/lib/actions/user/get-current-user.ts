@@ -1,9 +1,10 @@
 'use server'
 
 import { getBackendUrl } from "@/lib/utils/get-backendurl"
-import { get_cookies } from "@/lib/utils/get-cookie"
+import { delete_cookies, get_cookies } from "@/lib/utils/get-cookie"
 import { getErrorMessage } from "@/lib/utils/get-error"
 import axios from "axios"
+import { cookies } from "next/headers"
 
 
 export const getCurrentUser = async() =>{

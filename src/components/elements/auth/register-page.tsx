@@ -46,7 +46,7 @@ const registerSchema = z.object({
     .string()
     .min(6, 'Password must be at least 6 characters')
     .max(50, 'Password cannot exceed 50 characters')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+    .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, 'Password must contain at least one letter and one number'),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -85,7 +85,7 @@ function RegisterPage() {
       const res = await registerUser(data)
       if(res.success){
         toast.success(res.message)
-        router.push('/login')
+        router.push('/verify-token')
       }else if(!res.success && res.error){
         toast.error(res.error)
       }else{
@@ -246,14 +246,9 @@ function RegisterPage() {
                               <span className="text-xs text-sky-600">At least 6 characters</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${/[a-z]/.test(password) ? 'bg-green-500' : 'bg-gray-300'
+                              <div className={`w-2 h-2 rounded-full ${/[a-zA-Z]/.test(password) ? 'bg-green-500' : 'bg-gray-300'
                                 }`}></div>
-                              <span className="text-xs text-sky-600">One lowercase letter</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${/[A-Z]/.test(password) ? 'bg-green-500' : 'bg-gray-300'
-                                }`}></div>
-                              <span className="text-xs text-sky-600">One uppercase letter</span>
+                              <span className="text-xs text-sky-600">One letter</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className={`w-2 h-2 rounded-full ${/\d/.test(password) ? 'bg-green-500' : 'bg-gray-300'

@@ -1,6 +1,7 @@
 "use client"
 import { useGetUserFromToken } from '@/lib/hooks/tanstack-query/query-hook/user/use-get-user-from-token';
 import { useUserStore } from '@/lib/store/useUserStore';
+import { deleteClientCookie } from '@/lib/utils/client-cookies';
 import React, { useEffect, useMemo } from 'react'
 
 function UserStoreWrapper({ children }: { children: React.ReactNode }) {
@@ -19,7 +20,8 @@ function UserStoreWrapper({ children }: { children: React.ReactNode }) {
         if (shouldUpdateUser) {
             setUser(data.user);
         } else if (data?.error) {
-        setUser(undefined);
+            setUser(undefined);
+            deleteClientCookie("user_token");
         }
     }, [isLoading, shouldUpdateUser, data, setUser]);
 

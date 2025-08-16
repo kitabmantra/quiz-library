@@ -2,27 +2,24 @@
 
 import { getBackendUrl } from "@/lib/utils/get-backendurl"
 import { getErrorMessage } from "@/lib/utils/get-error"
-import { NextResponse } from "next/server"
 import axios from "axios"
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-export async function GET(req: Request){
+export async function verifyUserToken(token: string){
     try {
-        const {searchParams} = new URL(req.url)
-        const token = searchParams.get("token")
-        if(!token){
-            return NextResponse.json({error: "Token is required"}, {status: 400})
-        }
         const url = await getBackendUrl();
         const res = await axios.get(`${url}/api/v1/user-service/verify-token?token=${token}`)
         const data = res.data;
         console.log("this is the data : ",data)
         const usertoken =  data.token;
         if(!data.success || !usertoken){
-            return NextResponse.json({error: data.error}, {status: 400})
+            throw new Error(data.error)
         }
-        const response = NextResponse.json({message : data.message, success : data.success},{status : 200})
+
+        const cookieStore = await cookies()
         const expires = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
-        response.cookies.set("user_token", data.token, {
+        cookieStore.set("user_token", data.token, {
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
@@ -30,7 +27,7 @@ export async function GET(req: Request){
             path: '/',
         });
 
-        return response;
+        return {message : data.message, success : data.success}
     } catch (error) {
         error = getErrorMessage(error)
         console.log("this is the error : ",error)

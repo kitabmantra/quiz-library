@@ -3,6 +3,8 @@
 import { getBackendUrl } from "@/lib/utils/get-backendurl"
 import { getErrorMessage } from "@/lib/utils/get-error"
 import axios from "axios"
+import { cookies } from "next/headers"
+
 
 
 
@@ -24,6 +26,14 @@ export const registerUser = async(values : RegisterUserType) =>{
         if(!data.success){
             throw new Error(data.error)
         }
+        const cookieStore = await cookies()
+        cookieStore.set("user_email", values.email, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            expires: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+        })
+        
         console.log("data in registerign : ",data)
         return data;
     } catch (error) {
