@@ -1,9 +1,11 @@
 
 import Link from "next/link";
+import Header from "@/components/elements/site/header";
 
 async function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
+      <Header />
       {/* Hero Section */}
       <div className="flex flex-col items-center justify-center min-h-[80vh] px-8 text-center">
         <div className="max-w-4xl mx-auto">

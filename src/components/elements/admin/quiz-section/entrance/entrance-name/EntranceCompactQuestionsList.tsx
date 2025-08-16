@@ -45,7 +45,7 @@ export const EntranceCompactQuestionsList = React.memo(({
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? filteredQuestions.length + 1 : filteredQuestions.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 180, // Increased size to prevent overlapping
+    estimateSize: () => 190, 
     overscan: 5,
   })
 

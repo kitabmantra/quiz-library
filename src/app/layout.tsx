@@ -4,7 +4,6 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import QueryProvider from "@/lib/providers/query-provider";
 import UserStoreWrapper from "@/components/elements/UserStoreWrapper";
-import Header from "@/components/elements/site/header";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,7 +31,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <UserStoreWrapper>
-            <Header />
+            
             {children}
             <Toaster />
           </UserStoreWrapper>
