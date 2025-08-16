@@ -72,10 +72,10 @@ function VerifyTokenPage() {
 
     // Handle API response
     if (data) {
-      if (data.success && data.message) {
+      if (data.success && data.message === "user verified successfully") {
         setState('success')
         setMessage(data.message || 'Token verified successfully!')
-        router.push("/")
+        queryClient.invalidateQueries({ queryKey: ["get-user-from-token"] })
       } else {
         setState('error')
         setMessage(data.error || 'Verification failed')
@@ -89,7 +89,6 @@ function VerifyTokenPage() {
 
   const handleSuccessRedirect = () =>{
   // verify-user-token
-    queryClient.invalidateQueries({ queryKey: ["verify-user-token"] })
     router.replace("/")
   }
 

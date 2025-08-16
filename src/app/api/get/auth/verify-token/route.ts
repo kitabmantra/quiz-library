@@ -15,11 +15,12 @@ export async function GET(req: Request){
         const url = await getBackendUrl();
         const res = await axios.get(`${url}/api/v1/user-service/verify-token?token=${token}`)
         const data = res.data;
+        console.log("this is the data : ",data)
         const usertoken =  data.token;
         if(!data.success || !usertoken){
             return NextResponse.json({error: data.error}, {status: 400})
         }
-        const response = NextResponse.json({data},{status : 200})
+        const response = NextResponse.json({message : data.message, success : data.success},{status : 200})
         const expires = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
         response.cookies.set("user_token", data.token, {
             httpOnly: true,
@@ -32,6 +33,7 @@ export async function GET(req: Request){
         return response;
     } catch (error) {
         error = getErrorMessage(error)
+        console.log("this is the error : ",error)
         return NextResponse.json({error}, {status: 500})
     }
 }
