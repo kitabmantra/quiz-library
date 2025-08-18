@@ -47,6 +47,7 @@ export async function updateQuestion(question: Question) {
        
     } catch (error) {
        error = getErrorMessage(error)
+       console.log("this is error in question update: ",error)
        return {
         error, success : false,
        }

@@ -59,6 +59,41 @@ export interface QuestionData {
     entranceName: string
     questions: EntranceQuestionData[]
   }
+
+  export interface Subject {
+    subjectName: string
+    yearId: string
+  }
+  
+  export interface Year {
+    id: string
+    yearName: string
+  }
+  
+  export interface Faculty {
+    faculty: string
+    years: Year[]
+  }
+  
+  export interface Level {
+    levelName: string
+    faculties: Faculty[]
+  }
+  
+  export interface CountQuestionItem {
+    levelName: string
+    faculty: string
+    yearName: string
+    count: number
+    subjectName: string
+  }
+  
+  export interface AcademicCategories {
+    type: string
+    levels: Level[]
+    subjects?: Subject[]
+    countQuestionData?: CountQuestionItem[]
+  }
   
   export type CreationMode = "single" | "multiple" | "import" | "ai"
   
