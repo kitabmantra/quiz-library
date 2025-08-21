@@ -5,7 +5,7 @@ import { useLevelName } from "@/lib/hooks/params/useLevelName"
 import { useFacultyName } from "@/lib/hooks/params/useFaucltyName"
 import { redirect } from "next/navigation"
 import { useRouter } from "next/navigation"
-import { useGetAcademicQuestions } from "@/lib/hooks/tanstack-query/query-hook/quiz/academic/year/use-get-academic-questions"
+import { UpdateQuestion, useGetAcademicQuestions } from "@/lib/hooks/tanstack-query/query-hook/quiz/academic/year/use-get-academic-questions"
 import { useGetYearAcademicStat } from "@/lib/hooks/tanstack-query/query-hook/quiz/academic/year/use-get-year-academic-stat"
 import { AlertCircle, RefreshCw, ArrowLeft } from "lucide-react"
 
@@ -172,9 +172,45 @@ function YearNamePage() {
   }, [])
 
   const handleEditQuestion = useCallback(async (updatedQuestion: Question) => {
+    // Prevent update if no actual changes were made
+    if (selectedQuestion) {
+      const arraysShallowEqual = (a: string[] = [], b: string[] = []) => {
+        if (a.length !== b.length) return false
+        for (let i = 0; i < a.length; i++) {
+          if (a[i] !== b[i]) return false
+        }
+        return true
+      }
+
+      const original = selectedQuestion
+      const hasArrayChanges =
+        !arraysShallowEqual(original.options, updatedQuestion.options) ||
+        !arraysShallowEqual(original.tags, updatedQuestion.tags)
+
+      const hasPrimitiveChanges =
+        original.question !== updatedQuestion.question ||
+        original.correctAnswer !== updatedQuestion.correctAnswer ||
+        original.difficulty !== updatedQuestion.difficulty ||
+        (original.hint || "") !== (updatedQuestion.hint || "") ||
+        original.subjectName !== updatedQuestion.subjectName ||
+        (original.referenceUrl || "") !== (updatedQuestion.referenceUrl || "") ||
+        original.priority !== updatedQuestion.priority
+
+      if (!hasArrayChanges && !hasPrimitiveChanges) {
+        toast.error("Please make some changes before updating")
+        return
+      }
+    }
+
     setIsEditing(true)
     try {
-      const res = await updateQuestion(updatedQuestion)
+      const updatedQuestionData : UpdateQuestion = {
+        ...updatedQuestion,
+        yearName,
+        faculty: facultyName,
+        levelName
+      }
+      const res = await updateQuestion(updatedQuestionData)
       if(res.success && res.message){
         toast.success(res.message)
         
@@ -208,7 +244,7 @@ function YearNamePage() {
       toast.error("Failed to update question. Please try again.")
       setIsEditing(false)
     }
-  }, [debouncedSearchTerm, yearName, facultyName, levelName, queryClient])
+  }, [debouncedSearchTerm, yearName, facultyName, levelName, queryClient, selectedQuestion])
 
   const handleDeleteQuestion = useCallback(async (question: Question) => {
     if (confirm(`Are you sure you want to delete question "${question.question.substring(0, 50)}..."?`)) {
@@ -315,7 +351,7 @@ function YearNamePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="container mx-auto py-8 px-4 max-w-7xl">
-        {/* Simple Header */}
+        {/* Header with Breadcrumbs */}
             <div className="mb-8">
                 <div className="flex items-center gap-4 mb-6">
             <button
@@ -329,7 +365,33 @@ function YearNamePage() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 {yearName.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                                 </h1>
-              <p className="text-slate-600 text-lg font-medium">Question Management Dashboard</p>
+              <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                <button
+                  onClick={() => router.push('/quiz-section/academic')}
+                  className="hover:text-blue-600 hover:underline transition-colors"
+                >
+                  Academic
+                </button>
+                <span>•</span>
+                <button
+                  onClick={() => router.push(`/quiz-section/academic/level/${levelName}`)}
+                  className="hover:text-blue-600 hover:underline transition-colors capitalize"
+                >
+                  {levelName.replace(/-/g, " ")}
+                </button>
+                <span>•</span>
+                <button
+                  onClick={() => router.push(`/quiz-section/academic/level/${levelName}/faculty/${facultyName}`)}
+                  className="hover:text-blue-600 hover:underline transition-colors capitalize"
+                >
+                  {facultyName.replace(/-/g, " ")}
+                </button>
+                <span>•</span>
+                <span className="text-blue-600 font-medium underline capitalize">
+                  {yearName.replace(/-/g, " ")}
+                </span>
+              </div>
+              <p className="text-slate-600 text-lg font-medium mt-1">Question Management Dashboard</p>
                     </div>
                 </div>
             </div>

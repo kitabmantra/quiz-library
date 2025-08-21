@@ -7,6 +7,8 @@ type UserStore = {
     clearUser : () => void;
 }
 
+
+
 export const useUserStore = create<UserStore>()(
     persist((set) => ({
         user : undefined,

@@ -1,14 +1,20 @@
 'use server'
 
-import { Question } from "@/lib/hooks/tanstack-query/query-hook/quiz/academic/year/use-get-academic-questions";
+import { UpdateQuestion } from "@/lib/hooks/tanstack-query/query-hook/quiz/academic/year/use-get-academic-questions";
 import { getErrorMessage } from "@/lib/utils/get-error";
 import axios from "axios";
 import { getCurrentUser } from "@/lib/actions/user/get-current-user";
 import { getBackendUrl } from "@/lib/utils/get-backendurl";
 import { get_cookies } from "@/lib/utils/get-cookie";
 
-export async function updateQuestion(question: Question) {
+export async function updateQuestion(question: UpdateQuestion) {
     try {
+        if(!question.id || !question.yearName || !question.faculty || !question.levelName){
+            return {
+                error : "Invalid question data",
+                success : false,
+            }
+        }
         const user_token = await get_cookies("user_token")
         if(!user_token){
             return {

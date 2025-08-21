@@ -17,6 +17,24 @@ export type Question = {
     updatedAt: string;
 };
 
+export type UpdateQuestion = {
+    id: string;
+    yearName: string;
+    faculty: string;
+    levelName: string;
+    question: string;
+    options: string[];
+    correctAnswer: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+    hint?: string;
+    tags: string[];
+    subjectName: string;
+    referenceUrl?: string;
+    priority: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export type AcademicQuestionsResponse = {
     data: {
         questions: Question[];

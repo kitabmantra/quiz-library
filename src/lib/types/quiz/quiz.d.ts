@@ -11,6 +11,13 @@ export type CreateQuizQuestionType = {
     options : string[];
 }
 
+export type Filter = {
+  level: string | null
+  faculty: string | null
+  year: string | null
+  subjects: string[] ,
+  questionCount: number
+}
 
 export interface QuestionData {
     question: string

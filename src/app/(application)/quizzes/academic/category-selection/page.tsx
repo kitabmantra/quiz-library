@@ -1,8 +1,7 @@
-import PlayQuizPage from '@/components/elements/site/play-quiz/PlayQuizPage';
+import PlayQuizPage from '@/components/elements/site/quiz/PlayQuizPage';
 import React from 'react'
 
  function page() {
-   
       return( 
       <PlayQuizPage />
   )
