@@ -103,14 +103,14 @@ function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Register Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
+      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-purple-50 via-white to-purple-100">
         <div className="w-full max-w-md">
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center space-y-2">
-              <CardTitle className="text-3xl font-bold text-sky-800">
+              <CardTitle className="text-3xl font-bold text-purple-800">
                 Create Account
               </CardTitle>
-              <CardDescription className="text-sky-600">
+              <CardDescription className="text-purple-600">
                 Join our quiz community and start learning!
               </CardDescription>
             </CardHeader>
@@ -124,14 +124,14 @@ function RegisterPage() {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-sky-700">
+                          <FormLabel className="text-sm font-medium text-purple-700">
                             First Name *
                           </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
                               placeholder="John"
-                              className="border-sky-200 focus:border-sky-400 focus:ring-sky-400"
+                              className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
                             />
                           </FormControl>
                           <FormMessage className="text-red-500 text-xs" />
@@ -143,14 +143,14 @@ function RegisterPage() {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium text-sky-700">
+                          <FormLabel className="text-sm font-medium text-purple-700">
                             Last Name *
                           </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
                               placeholder="Doe"
-                              className="border-sky-200 focus:border-sky-400 focus:ring-sky-400"
+                              className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
                             />
                           </FormControl>
                           <FormMessage className="text-red-500 text-xs" />
@@ -164,7 +164,7 @@ function RegisterPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-sky-700">
+                        <FormLabel className="text-sm font-medium text-purple-700">
                           Email Address *
                         </FormLabel>
                         <FormControl>
@@ -172,7 +172,7 @@ function RegisterPage() {
                             {...field}
                             type="email"
                             placeholder="john@example.com"
-                            className="border-sky-200 focus:border-sky-400 focus:ring-sky-400"
+                            className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
                           />
                         </FormControl>
                         <FormMessage className="text-red-500 text-xs" />
@@ -185,7 +185,7 @@ function RegisterPage() {
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-sky-700">
+                        <FormLabel className="text-sm font-medium text-purple-700">
                           Phone Number *
                         </FormLabel>
                         <FormControl>
@@ -193,7 +193,7 @@ function RegisterPage() {
                             {...field}
                             type="tel"
                             placeholder="+1234567890"
-                            className="border-sky-200 focus:border-sky-400 focus:ring-sky-400"
+                            className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
                           />
                         </FormControl>
                         <FormMessage className="text-red-500 text-xs" />
@@ -206,7 +206,7 @@ function RegisterPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-sky-700">
+                        <FormLabel className="text-sm font-medium text-purple-700">
                           Password *
                         </FormLabel>
                         <FormControl>
@@ -215,12 +215,12 @@ function RegisterPage() {
                               {...field}
                               type={showPassword ? 'text' : 'password'}
                               placeholder="••••••••"
-                              className="border-sky-200 focus:border-sky-400 focus:ring-sky-400 pr-10"
+                              className="border-purple-200 focus:border-purple-400 focus:ring-purple-400 pr-10"
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sky-600 hover:text-sky-800"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 hover:text-purple-800"
                             >
                               {showPassword ? (
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,17 +243,17 @@ function RegisterPage() {
                             <div className="flex items-center space-x-2">
                               <div className={`w-2 h-2 rounded-full ${password.length >= 6 ? 'bg-green-500' : 'bg-gray-300'
                                 }`}></div>
-                              <span className="text-xs text-sky-600">At least 6 characters</span>
+                              <span className="text-xs text-purple-600">At least 6 characters</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className={`w-2 h-2 rounded-full ${/[a-zA-Z]/.test(password) ? 'bg-green-500' : 'bg-gray-300'
                                 }`}></div>
-                              <span className="text-xs text-sky-600">One letter</span>
+                              <span className="text-xs text-purple-600">One letter</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <div className={`w-2 h-2 rounded-full ${/\d/.test(password) ? 'bg-green-500' : 'bg-gray-300'
                                 }`}></div>
-                              <span className="text-xs text-sky-600">One number</span>
+                              <span className="text-xs text-purple-600">One number</span>
                             </div>
                           </div>
                         )}
@@ -266,7 +266,7 @@ function RegisterPage() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-sky-700">
+                        <FormLabel className="text-sm font-medium text-purple-700">
                           Confirm Password *
                         </FormLabel>
                         <FormControl>
@@ -275,12 +275,12 @@ function RegisterPage() {
                               {...field}
                               type={showConfirmPassword ? 'text' : 'password'}
                               placeholder="••••••••"
-                              className="border-sky-200 focus:border-sky-400 focus:ring-sky-400 pr-10"
+                              className="border-purple-200 focus:border-purple-400 focus:ring-purple-400 pr-10"
                             />
                             <button
                               type="button"
                               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sky-600 hover:text-sky-800"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 hover:text-purple-800"
                             >
                               {showConfirmPassword ? (
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,7 +302,7 @@ function RegisterPage() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-semibold py-2.5"
+                    className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2.5"
                     disabled={form.formState.isSubmitting}
                   >
                     {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
@@ -311,9 +311,9 @@ function RegisterPage() {
               </Form>
 
               <div className="mt-6 text-center">
-                <p className="text-sm text-sky-600">
+                <p className="text-sm text-purple-600">
                   Already have an account?{' '}
-                  <Link href="/login" className="font-semibold text-sky-700 hover:text-sky-800 underline">
+                  <Link href="/login" className="font-semibold text-purple-700 hover:text-purple-800 underline">
                     Sign in
                   </Link>
                 </p>
@@ -323,52 +323,124 @@ function RegisterPage() {
         </div>
       </div>
 
-      {/* Right Side - Register Illustration */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Right Side - Enhanced Register Illustration */}
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-purple-900 via-purple-800 to-blue-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-blue-600/10 to-purple-600/10"></div>
 
-        {/* Register Illustration */}
-        <div className="relative z-10 flex items-center justify-center w-full">
-          <div className="text-center text-white p-8">
-            <div className="mb-8">
+        {/* Quiz Interface Mockup - Top Right */}
+        <div className="absolute top-8 right-8 z-20">
+          <div className="relative">
+            <div className="w-72 h-80 bg-white rounded-2xl shadow-2xl p-5 border-4 border-purple-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div className="text-sm font-medium text-purple-600">Question 1/10</div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="h-3 bg-purple-100 rounded-full w-3/4"></div>
+                <div className="h-3 bg-purple-100 rounded-full w-full"></div>
+                <div className="h-3 bg-purple-100 rounded-full w-5/6"></div>
+                
+                <div className="space-y-2 mt-4">
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-3/4"></div>
+                  </div>
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-2/3"></div>
+                  </div>
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-4/5"></div>
+                  </div>
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center mt-3">
+                  <div className="text-xs text-purple-600">⏱️ 00:00</div>
+                  <div className="w-16 h-1.5 bg-purple-100 rounded-full overflow-hidden">
+                    <div className="w-1/10 h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Floating Elements */}
+            <div className="absolute -top-3 -left-3 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg animate-bounce">
+              🚀
+            </div>
+            <div className="absolute -bottom-3 -right-3 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg animate-bounce" style={{animationDelay: '0.5s'}}>
+              ⭐
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Content - Centered */}
+        <div className="relative z-10 flex items-center justify-center w-full h-full">
+          <div className="text-center text-white p-8 max-w-lg">
+            <div className="mb-6">
               <img
                 src="/register-illustration.svg"
                 alt="Register Illustration"
-                className="w-80 h-80 mx-auto mb-6 drop-shadow-2xl"
+                className="w-48 h-48 mx-auto mb-4 drop-shadow-2xl"
               />
             </div>
 
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-3xl font-bold mb-3">
               Join Our Community
             </h2>
-            <p className="text-xl text-white/90 max-w-md mx-auto leading-relaxed mb-8">
+            <p className="text-lg text-white/90 max-w-sm mx-auto leading-relaxed mb-6">
               Connect with thousands of learners and start your educational journey with our interactive quiz platform
             </p>
 
-            <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto">
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-4 text-white/80 text-xs mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                <span>Free to Join</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                <span>Instant Access</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                <span>No Credit Card</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mb-6">
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">10K+</div>
-                <div className="text-sm text-white/80">Active Learners</div>
+                <div className="text-2xl font-bold text-yellow-300 mb-2">50K+</div>
+                <div className="text-xs text-white/80">Active Learners</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">500+</div>
-                <div className="text-sm text-white/80">Quiz Categories</div>
+                <div className="text-2xl font-bold text-yellow-300 mb-2">1000+</div>
+                <div className="text-xs text-white/80">Quiz Categories</div>
               </div>
             </div>
 
             {/* Features List */}
-            <div className="mt-8 space-y-3">
-              <div className="flex items-center justify-center space-x-3">
+            <div className="space-y-2">
+              <div className="flex items-center justify-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-white/90">Interactive Learning Experience</span>
+                <span className="text-white/90 text-xs">Interactive Learning Experience</span>
               </div>
-              <div className="flex items-center justify-center space-x-3">
+              <div className="flex items-center justify-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-white/90">Progress Tracking & Analytics</span>
+                <span className="text-white/90 text-xs">Progress Tracking & Analytics</span>
               </div>
-              <div className="flex items-center justify-center space-x-3">
+              <div className="flex items-center justify-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="text-white/90">Wide Range of Subjects</span>
+                <span className="text-white/90 text-xs">Wide Range of Subjects</span>
               </div>
             </div>
           </div>

@@ -54,14 +54,14 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
+      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-purple-50 via-white to-purple-100">
         <div className="w-full max-w-md">
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center space-y-2">
-              <CardTitle className="text-3xl font-bold text-sky-800">
+              <CardTitle className="text-3xl font-bold text-purple-800">
                 Welcome Back
               </CardTitle>
-              <CardDescription className="text-sky-600">
+              <CardDescription className="text-purple-600">
                 Sign in to continue your learning journey
               </CardDescription>
             </CardHeader>
@@ -69,7 +69,7 @@ function LoginPage() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-sky-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-purple-700 mb-1">
                     Email Address
                   </label>
                   <Input
@@ -80,13 +80,13 @@ function LoginPage() {
                     onChange={handleInputChange}
                     disabled={isCreating}
                     required
-                    className="border-sky-200 focus:border-sky-400 focus:ring-sky-400"
+                    className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
                     placeholder="john@example.com"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-sky-700 mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-purple-700 mb-1">
                     Password
                   </label>
                   <Input
@@ -97,7 +97,7 @@ function LoginPage() {
                     onChange={handleInputChange}
                     disabled={isCreating}
                     required
-                    className="border-sky-200 focus:border-sky-400 focus:ring-sky-400"
+                    className="border-purple-200 focus:border-purple-400 focus:ring-purple-400"
                     placeholder="••••••••"
                   />
                 </div>
@@ -106,18 +106,18 @@ function LoginPage() {
                   <label className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      className="rounded border-sky-300 text-sky-600 focus:ring-sky-500"
+                      className="rounded border-purple-300 text-purple-600 focus:ring-purple-500"
                     />
-                    <span className="text-sm text-sky-700">Remember me</span>
+                    <span className="text-sm text-purple-700">Remember me</span>
                   </label>
-                  <Link href="/login/forgot-password" className="text-sm text-sky-600 hover:text-sky-800 underline">
+                  <Link href="/login/forgot-password" className="text-sm text-purple-600 hover:text-purple-800 underline">
                     Forgot password?
                   </Link>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-semibold py-2.5"
+                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold py-2.5"
                   disabled={isCreating}
                   >
                   {isCreating ? "Logging in..." : "Sign In"}
@@ -125,9 +125,9 @@ function LoginPage() {
               </form>
 
               <div className="mt-6 text-center">
-                <p className="text-sm text-sky-600">
+                <p className="text-sm text-purple-600">
                   Don't have an account?{' '}
-                  <Link href="/register" className="font-semibold text-sky-700 hover:text-sky-800 underline">
+                  <Link href="/register" className="font-semibold text-purple-700 hover:text-purple-800 underline">
                     Sign up
                   </Link>
                 </p>
@@ -137,42 +137,114 @@ function LoginPage() {
         </div>
       </div>
 
-      {/* Right Side - AI Generated Image */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Right Side - Enhanced Illustration */}
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-purple-900 via-purple-800 to-blue-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-blue-600/10 to-purple-600/10"></div>
 
-        {/* AI Generated Quiz/Education Image */}
-        <div className="relative z-10 flex items-center justify-center w-full">
-          <div className="text-center text-white p-8">
-            <div className="mb-8">
+        {/* Quiz Interface Mockup - Top Right */}
+        <div className="absolute top-8 right-8 z-20">
+          <div className="relative">
+            <div className="w-72 h-80 bg-white rounded-2xl shadow-2xl p-5 border-4 border-purple-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                </div>
+                <div className="text-sm font-medium text-purple-600">Question 2/10</div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="h-3 bg-purple-100 rounded-full w-3/4"></div>
+                <div className="h-3 bg-purple-100 rounded-full w-full"></div>
+                <div className="h-3 bg-purple-100 rounded-full w-5/6"></div>
+                
+                <div className="space-y-2 mt-4">
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-3/4"></div>
+                  </div>
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-2/3"></div>
+                  </div>
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-4/5"></div>
+                  </div>
+                  <div className="h-7 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center px-3">
+                    <div className="w-3 h-3 border-2 border-purple-400 rounded-full mr-2"></div>
+                    <div className="h-2 bg-purple-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center mt-3">
+                  <div className="text-xs text-purple-600">⏱️ 01:30</div>
+                  <div className="w-16 h-1.5 bg-purple-100 rounded-full overflow-hidden">
+                    <div className="w-2/5 h-full bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Floating Elements */}
+            <div className="absolute -top-3 -left-3 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg animate-bounce">
+              ✓
+            </div>
+            <div className="absolute -bottom-3 -right-3 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg animate-bounce" style={{animationDelay: '0.5s'}}>
+              ⭐
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Content - Centered */}
+        <div className="relative z-10 flex items-center justify-center w-full h-full">
+          <div className="text-center text-white p-8 max-w-lg">
+            <div className="mb-6">
               <Image
                 src="/login-illustration.svg"
                 alt="Quiz Learning Illustration"
-                className="w-64 h-64 mx-auto mb-6 drop-shadow-lg"
-                width={256}
-                height={256}
+                className="w-48 h-48 mx-auto mb-4 drop-shadow-lg"
+                width={192}
+                height={192}
               />
             </div>
 
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-3xl font-bold mb-3">
               Master Your Knowledge
             </h2>
-            <p className="text-xl text-white/90 max-w-md mx-auto leading-relaxed">
+            <p className="text-lg text-white/90 max-w-sm mx-auto leading-relaxed mb-6">
               Join thousands of learners who are improving their skills with our interactive quiz platform
             </p>
 
-            <div className="mt-8 flex justify-center space-x-4">
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-4 text-white/80 text-xs mb-6">
+              <div className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                <span>Secure Login</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                <span>24/7 Access</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-green-400">✓</span>
+                <span>Progress Sync</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 max-w-xs mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold">10K+</div>
-                <div className="text-sm text-white/80">Active Learners</div>
+                <div className="text-2xl font-bold text-yellow-300">50K+</div>
+                <div className="text-xs text-white/80">Active Learners</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold">500+</div>
-                <div className="text-sm text-white/80">Quiz Categories</div>
+                <div className="text-2xl font-bold text-yellow-300">1000+</div>
+                <div className="text-xs text-white/80">Quiz Categories</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold">95%</div>
-                <div className="text-sm text-white/80">Success Rate</div>
+                <div className="text-2xl font-bold text-yellow-300">98%</div>
+                <div className="text-xs text-white/80">Success Rate</div>
               </div>
             </div>
           </div>

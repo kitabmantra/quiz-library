@@ -962,7 +962,7 @@ function PlayEntranceQuiz() {
             </AlertDialogCancel>
             <AlertDialogAction onClick={() => {
               setShowLeaveAlert(false)
-              if (pendingNavigation === "/quizzes/entrance") {
+              if (pendingNavigation === "/quizzes/competative") {
                 navigateToCategories()
               } else if (pendingNavigation === 'refresh') {
                 // Reset only quiz progress but keep filter and questions, then reshuffle

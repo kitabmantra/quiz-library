@@ -16,14 +16,12 @@ import {
   Calendar,
   TrendingUp,
   ArrowLeft,
-  Home,
-  Target,
   Award,
-  GraduationCap,
   BookOpen,
+  GraduationCap,
   Play,
 } from "lucide-react"
-import { useGetUserPastHistory } from "@/lib/hooks/tanstack-query/query-hook/quiz/quiz-history/use-get-user-past-history"
+import { useGetEntranceQuizHistory } from '@/lib/hooks/tanstack-query/query-hook/quiz/entrance/use-get-entrance-quiz-history'
 import { useRouter } from "next/navigation"
 
 // Types based on the backend structure
@@ -44,19 +42,13 @@ interface UserQuizQuestionHistory {
   updatedAt: string
 }
 
-function UserQuizHistoryPage() {
-  const { data, isLoading, error } = useGetUserPastHistory()
+function EntranceQuizUserHistory() {
+  const { data: entranceQuizHistory, isLoading, error } = useGetEntranceQuizHistory()
   const router = useRouter()
   const [selectedHistory, setSelectedHistory] = useState<UserQuizQuestionHistory | null>(null)
   const [showHistoryDetail, setShowHistoryDetail] = useState(false)
 
-  console.log("this is the data : ", data)
-  console.log("this is the history data : ", data?.questions)
-  console.log("this is the history structure : ", {
-    id: data?.questions?.id,
-    correctQuestions: data?.questions?.correctQuestions?.length,
-    wrongQuestions: data?.questions?.wrongQuestions?.length,
-  })
+  console.log("this is the entrance quiz history: ", entranceQuizHistory)
 
   const formatTime = (seconds: number) => {
     const safeSeconds = Math.max(0, Math.floor(seconds || 0))
@@ -98,7 +90,6 @@ function UserQuizHistoryPage() {
   }
 
   const calculateHistoryStats = (history: UserQuizQuestionHistory) => {
-    // Ensure arrays exist and are arrays
     const correctQuestions = Array.isArray(history.correctQuestions) ? history.correctQuestions : []
     const wrongQuestions = Array.isArray(history.wrongQuestions) ? history.wrongQuestions : []
 
@@ -196,48 +187,6 @@ function UserQuizHistoryPage() {
     )
   }
 
-  const BreadcrumbNav = ({ showDetail = false }: { showDetail?: boolean }) => (
-    <nav className="flex items-center space-x-2 text-sm mb-8">
-      <button
-        onClick={() => router.push("/")}
-        className="flex items-center text-slate-500 hover:text-slate-700 transition-colors"
-      >
-        <Home className="h-4 w-4 mr-1" />
-        Home
-      </button>
-      <span className="text-slate-400">/</span>
-      <button
-        onClick={() => router.push("/quizzes/academic/category-selection")}
-        className="flex items-center text-slate-500 hover:text-slate-700 transition-colors"
-      >
-        <Target className="h-4 w-4 mr-1" />
-        Quiz Categories
-      </button>
-      <span className="text-slate-400">/</span>
-      {showDetail ? (
-        <>
-          <button
-            onClick={handleBackToList}
-            className="flex items-center text-slate-500 hover:text-slate-700 transition-colors"
-          >
-            <Trophy className="h-4 w-4 mr-1" />
-            Quiz History
-          </button>
-          <span className="text-slate-400">/</span>
-          <span className="flex items-center text-slate-900 font-medium">
-            <Award className="h-4 w-4 mr-1" />
-            Quiz Results
-          </span>
-        </>
-      ) : (
-        <span className="flex items-center text-slate-900 font-medium">
-          <Trophy className="h-4 w-4 mr-1" />
-          Quiz History
-        </span>
-      )}
-    </nav>
-  )
-
   const handleViewHistory = (history: UserQuizQuestionHistory) => {
     setSelectedHistory(history)
     setShowHistoryDetail(true)
@@ -252,11 +201,8 @@ function UserQuizHistoryPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative">
-            <Loader2 className="h-16 w-16 text-purple-600 animate-spin mx-auto mb-6" />
-            <div className="absolute inset-0 h-16 w-16 border-4 border-purple-200 rounded-full mx-auto"></div>
-          </div>
-          <h2 className="text-xl font-semibold text-slate-700 mb-2">Loading Quiz History</h2>
+          <Loader2 className="h-16 w-16 text-purple-600 animate-spin mx-auto mb-6" />
+          <h2 className="text-xl font-semibold text-slate-700 mb-2">Loading Entrance Quiz History</h2>
           <p className="text-slate-500">Please wait while we fetch your results...</p>
         </div>
       </div>
@@ -265,15 +211,11 @@ function UserQuizHistoryPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-red-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
-          <div className="bg-red-100 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-            <AlertTriangle className="h-10 w-10 text-red-600" />
-          </div>
+          <AlertTriangle className="h-16 w-16 text-red-600 mx-auto mb-6" />
           <h2 className="text-2xl font-bold text-slate-900 mb-3">Unable to Load History</h2>
-          <p className="text-slate-600 mb-6">
-            We encountered an error while loading your quiz history. Please try again.
-          </p>
+          <p className="text-slate-600 mb-6">We encountered an error while loading your entrance quiz history.</p>
           <Button onClick={() => window.location.reload()} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2">
             Try Again
           </Button>
@@ -282,17 +224,8 @@ function UserQuizHistoryPage() {
     )
   }
 
-  const historyData = data?.questions
-
-  // Since only one history item comes, handle it directly
-  const validHistoryData: UserQuizQuestionHistory[] =
-    historyData &&
-    typeof historyData === "object" &&
-    "id" in historyData &&
-    "correctQuestions" in historyData &&
-    "wrongQuestions" in historyData
-      ? [historyData as UserQuizQuestionHistory]
-      : []
+  const historyData = entranceQuizHistory?.questions
+  const validHistoryData: UserQuizQuestionHistory[] = historyData && typeof historyData === "object" && "id" in historyData ? [historyData as UserQuizQuestionHistory] : []
 
   if (showHistoryDetail && selectedHistory) {
     const stats = calculateHistoryStats(selectedHistory)
@@ -300,17 +233,14 @@ function UserQuizHistoryPage() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
-
         <div className="relative z-10 w-full p-6 lg:p-8 max-w-7xl mx-auto">
-          <BreadcrumbNav showDetail={true} />
-
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
               <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg">
                 <Award className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Quiz Results</h1>
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">Entrance Quiz Results</h1>
                 <p className="text-lg text-gray-600">Completed on {formatDate(selectedHistory.createdAt)}</p>
               </div>
             </div>
@@ -385,42 +315,6 @@ function UserQuizHistoryPage() {
             </div>
 
             <div className="lg:col-span-3 space-y-8">
-              {/* Performance Chart */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                    <TrendingUp className="h-6 w-6 mr-3 text-purple-600" />
-                    Performance Over Time
-                  </h2>
-                  <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                    Seconds per question (lower is better)
-                  </div>
-                </div>
-                <TimeSeriesChart
-                  times={allQuestions.map((q) => Math.max(0, Math.round(q.timeSpent || 0)))}
-                  correctness={allQuestions.map((q) => !!q.isCorrect)}
-                />
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="flex items-center gap-6 text-sm">
-                    <span className="inline-flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
-                      <span className="w-3 h-3 rounded-full bg-blue-500" />
-                      Time Trend
-                    </span>
-                    <span className="inline-flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded-full">
-                      <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                      Correct
-                    </span>
-                    <span className="inline-flex items-center gap-2 bg-red-50 px-3 py-1 rounded-full">
-                      <span className="w-3 h-3 rounded-full bg-red-500" />
-                      Wrong
-                    </span>
-                  </div>
-                  <div className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
-                    Average: {formatTime(Math.round(stats.averageTime))}
-                  </div>
-                </div>
-              </div>
-
               {/* Quiz Summary */}
               <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -447,6 +341,42 @@ function UserQuizHistoryPage() {
                 </div>
               </div>
 
+              {/* Performance Chart */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <TrendingUp className="h-6 w-6 mr-3 text-purple-600" />
+                    Performance Over Time
+                  </h2>
+                  <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    Seconds per question (lower is better)
+                  </div>
+                </div>
+                <TimeSeriesChart
+                  times={allQuestions.map((q) => Math.max(0, Math.round(q.timeSpent || 0)))}
+                  correctness={allQuestions.map((q) => !!q.isCorrect)}
+                />
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="flex items-center gap-6 text-sm">
+                    <span className="inline-flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full">
+                      <span className="w-3 h-3 rounded-full bg-purple-500" />
+                      Time Trend
+                    </span>
+                    <span className="inline-flex items-center gap-2 bg-emerald-50 px-3 py-1 rounded-full">
+                      <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                      Correct
+                    </span>
+                    <span className="inline-flex items-center gap-2 bg-red-50 px-3 py-1 rounded-full">
+                      <span className="w-3 h-3 rounded-full bg-red-500" />
+                      Wrong
+                    </span>
+                  </div>
+                  <div className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+                    Average: {formatTime(Math.round(stats.averageTime))}
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   onClick={handleBackToList}
@@ -458,7 +388,7 @@ function UserQuizHistoryPage() {
                   Back to History
                 </Button>
                 <Button
-                  onClick={() => router.push("/quizzes/academic/category-selection")}
+                  onClick={() => router.push("/quizzes/competative")}
                   size="lg"
                   className="px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg"
                 >
@@ -469,32 +399,6 @@ function UserQuizHistoryPage() {
             </div>
           </div>
         </div>
-
-        <style jsx>{`
-          @keyframes blob {
-            0% {
-              transform: translate(0px, 0px) scale(1);
-            }
-            33% {
-              transform: translate(30px, -50px) scale(1.1);
-            }
-            66% {
-              transform: translate(-20px, 20px) scale(0.9);
-            }
-            100% {
-              transform: translate(0px, 0px) scale(1);
-            }
-          }
-          .animate-blob {
-            animation: blob 7s infinite;
-          }
-          .animation-delay-2000 {
-            animation-delay: 2s;
-          }
-          .animation-delay-4000 {
-            animation-delay: 4s;
-          }
-        `}</style>
       </div>
     )
   }
@@ -503,27 +407,19 @@ function UserQuizHistoryPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
         <div className="max-w-4xl mx-auto p-6 lg:p-8">
-          <BreadcrumbNav />
-
           <div className="text-center py-20">
-            <div className="relative mb-8">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                <Trophy className="h-12 w-12 text-purple-600" />
-              </div>
-              <div className="absolute -inset-4 bg-purple-200 rounded-full blur-xl opacity-30 -z-10"></div>
+            <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto shadow-lg mb-8">
+              <Trophy className="h-12 w-12 text-purple-600" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">No Quiz History Yet</h2>
-            <p className="text-xl text-gray-600 mb-2">Ready to start your learning journey?</p>
-            <p className="text-gray-500 mb-8 max-w-md mx-auto">
-              Complete some quizzes to see your progress, track your performance, and celebrate your achievements!
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">No Entrance Quiz History Yet</h2>
+            <p className="text-xl text-gray-600 mb-8">Ready to start your entrance exam preparation?</p>
             <Button
-              onClick={() => router.push("/quizzes/academic/category-selection")}
+              onClick={() => router.push("/quizzes/competative")}
               size="lg"
               className="px-8 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl"
             >
               <Plus className="h-6 w-6 mr-2" />
-              Start Your First Quiz
+              Start Your First Entrance Quiz
             </Button>
           </div>
         </div>
@@ -533,38 +429,33 @@ function UserQuizHistoryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
-
       <div className="relative z-10 w-full max-w-6xl mx-auto p-6 lg:p-8">
-        <BreadcrumbNav />
-
         <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl">
-              <Trophy className="h-10 w-10 text-white" />
-            </div>
+          <div className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl mx-auto mb-6 w-fit">
+            <Trophy className="h-10 w-10 text-white" />
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Quiz History</h1>
+          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Entrance Quiz History</h1>
           <p className="text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto">
-            Review your past quiz performances and track your learning progress
+            Review your past entrance quiz performances and track your learning progress
           </p>
           
           {/* Navigation Buttons */}
           <div className="flex flex-wrap justify-center gap-3 mt-6">
             <Button
-              onClick={() => router.push('/quizzes/academic')}
+              onClick={() => router.push('/quizzes/competative')}
               variant="default"
               className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300"
             >
-              <GraduationCap className="w-4 h-4 mr-2" />
-              Academic Quizzes
+              <BookOpen className="w-4 h-4 mr-2" />
+              Entrance Quizzes
             </Button>
             <Button
-              onClick={() => router.push('/quizzes/competative')}
+              onClick={() => router.push('/quizzes/academic')}
               variant="outline"
               className="px-6 py-2 border-purple-300 text-purple-600 hover:bg-purple-50 transition-all duration-300"
             >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Entrance Quizzes
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Academic Quizzes
             </Button>
             <Button
               onClick={() => router.push('/quizzes')}
@@ -578,7 +469,7 @@ function UserQuizHistoryPage() {
         </div>
 
         <div className="space-y-8">
-          {validHistoryData.map((history: UserQuizQuestionHistory, index: number) => {
+          {validHistoryData.map((history: UserQuizQuestionHistory) => {
             const stats = calculateHistoryStats(history)
             return (
               <div
@@ -592,7 +483,7 @@ function UserQuizHistoryPage() {
                       <Calendar className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">Latest Quiz Attempt</h3>
+                      <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">Latest Entrance Quiz Attempt</h3>
                       <p className="text-lg text-gray-500 font-medium">{formatDate(history.createdAt)}</p>
                     </div>
                   </div>
@@ -646,19 +537,17 @@ function UserQuizHistoryPage() {
 
         <div className="mt-12 text-center">
           <Button
-            onClick={() => router.push("/quizzes/academic/category-selection")}
+            onClick={() => router.push("/quizzes/competative")}
             size="lg"
             className="px-10 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl"
           >
             <Plus className="h-6 w-6 mr-2" />
-            Start New Quiz
+            Start New Entrance Quiz
           </Button>
         </div>
       </div>
-
-
     </div>
   )
 }
 
-export default UserQuizHistoryPage
+export default EntranceQuizUserHistory

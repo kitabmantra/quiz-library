@@ -374,13 +374,37 @@ function PlayQuizPage() {
       <div className="relative z-10 w-full p-4 lg:p-6">
         {/* Header Section */}
         <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl">
-              <GraduationCap className="h-8 w-8 text-white" />
-            </div>
-          </div>
+          
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Academic Quiz</h1>
           <p className="text-lg lg:text-xl text-gray-600">Select your subjects and start testing</p>
+          
+          {/* Navigation Buttons */}
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            <Button
+              onClick={() => router.push('/quizzes/competative')}
+              variant="outline"
+              className="px-6 py-2 border-blue-300 text-blue-600 hover:bg-blue-50 transition-all duration-300"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Entrance Quizzes
+            </Button>
+            <Button
+              onClick={() => router.push('/quizzes/academic')}
+              variant="default"
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300"
+            >
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Academic Quizzes
+            </Button>
+            <Button
+              onClick={() => router.push('/quizzes')}
+              variant="outline"
+              className="px-6 py-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-300"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              All Quizzes
+            </Button>
+          </div>
         </div>
 
         {/* Main Content Grid */}

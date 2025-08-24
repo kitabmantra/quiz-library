@@ -13,12 +13,13 @@ import {
   Trophy,
   ChevronRight,
   ChevronDown,
+  GraduationCap,
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-import { quizStorage } from "@/lib/utils/quiz-storage"
+import { useGetEntranceQuizHistory } from "@/lib/hooks/tanstack-query/query-hook/quiz/entrance/use-get-entrance-quiz-history"
 
 // Type definitions for entrance data
 interface EntranceQuestionData {
@@ -46,7 +47,8 @@ function EntranceCategoryPage() {
   const [selectedNumber, setSelectedNumber] = useState(10)
   const [questionCountSelected, setQuestionCountSelected] = useState(true)
   const [isStartingQuiz, setIsStartingQuiz] = useState(false) // Add loading state
-  
+  const { data: entranceQuizHistory, isLoading: isLoadingEntranceQuizHistory, isError: isErrorEntranceQuizHistory } = useGetEntranceQuizHistory()
+  console.log("this is the entrance quiz history: ", entranceQuizHistory)
   const router = useRouter()
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({ 
     entrance: null, 
@@ -266,31 +268,55 @@ function EntranceCategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
       </div>
 
       <div className="relative z-10 w-full p-4 lg:p-6">
         {/* Header Section */}
         <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl">
-              <BookOpen className="h-8 w-8 text-white" />
-            </div>
-          </div>
+         
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Entrance Quiz</h1>
           <p className="text-lg lg:text-xl text-gray-600">Test your knowledge for entrance exams</p>
+          
+          {/* Navigation Buttons */}
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            <Button
+              onClick={() => router.push('/quizzes/competative')}
+              variant="default"
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white transition-all duration-300"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Entrance Quizzes
+            </Button>
+            <Button
+              onClick={() => router.push('/quizzes/academic')}
+              variant="outline"
+              className="px-6 py-2 border-purple-300 text-purple-600 hover:bg-purple-50 transition-all duration-300"
+            >
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Academic Quizzes
+            </Button>
+            <Button
+              onClick={() => router.push('/quizzes')}
+              variant="outline"
+              className="px-6 py-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-300"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              All Quizzes
+            </Button>
+          </div>
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto min-h-[80vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-7xl mx-auto">
           {/* Left Column - Quiz Configuration & Filters */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-3 space-y-4">
             {/* Quiz Configuration Card */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-gray-900">Quiz Configuration</h3>
                 {(questionCountSelected || activeFilters.entrance || activeFilters.subjects.length > 0 || activeFilters.difficulty) && (
@@ -307,7 +333,7 @@ function EntranceCategoryPage() {
               {/* Question Count Selection */}
               <div className="mb-4">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${questionCountSelected ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${questionCountSelected ? 'bg-purple-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
                     1
                   </div>
                   <label className="text-base font-semibold text-gray-900">Question Count</label>
@@ -328,7 +354,7 @@ function EntranceCategoryPage() {
                       }
                     }}
                   >
-                    <SelectTrigger className={`w-full h-10 text-base ${questionCountSelected ? 'border-blue-300 bg-blue-50' : 'border-gray-300'}`}>
+                    <SelectTrigger className={`w-full h-10 text-base ${questionCountSelected ? 'border-purple-300 bg-purple-50' : 'border-gray-300'}`}>
                       <SelectValue placeholder="Select count" />
                     </SelectTrigger>
                     <SelectContent>
@@ -339,7 +365,7 @@ function EntranceCategoryPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-blue-600 font-medium mt-1 block">
+                  <span className="text-sm text-purple-600 font-medium mt-1 block">
                     ✓ {selectedNumber} questions selected
                   </span>
                 </div>
@@ -348,7 +374,7 @@ function EntranceCategoryPage() {
               {/* Filter Selection */}
               <div className="mb-4">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${activeFilters.entrance ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${activeFilters.entrance ? 'bg-purple-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
                     2
                   </div>
                   <label className="text-base font-semibold text-gray-900">Select Filters</label>
@@ -388,7 +414,7 @@ function EntranceCategoryPage() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-2">Selected Filters:</h4>
                   <div className="space-y-1.5">
                     {activeFilters.entrance && (
-                      <div className="bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded-lg text-sm font-medium">
+                      <div className="bg-purple-50 border border-purple-200 text-purple-800 px-3 py-2 rounded-lg text-sm font-medium">
                         Entrance: {activeFilters.entrance.replace(/-/g, " ")}
                       </div>
                     )}
@@ -396,7 +422,7 @@ function EntranceCategoryPage() {
                     {activeFilters.subjects.slice(0, 3).map((subject, index) => (
                       <div
                         key={index}
-                        className="px-3 py-2 rounded-lg text-sm font-medium bg-blue-50 border border-blue-200 text-blue-800"
+                        className="px-3 py-2 rounded-lg text-sm font-medium bg-purple-50 border border-purple-200 text-purple-800"
                       >
                         {subject.replace(/-/g, " ")}
                       </div>
@@ -418,7 +444,7 @@ function EntranceCategoryPage() {
 
               {/* Status Message */}
               <div className="mb-4">
-                <p className={`text-sm font-medium ${!activeFilters.entrance ? 'text-blue-600' :
+                <p className={`text-sm font-medium ${!activeFilters.entrance ? 'text-purple-600' :
                   canPlayQuiz() ? 'text-green-600' : 'text-red-600'
                   }`}>
                   {getQuizStatusMessage()}
@@ -430,7 +456,7 @@ function EntranceCategoryPage() {
                 onClick={handlePlayQuiz}
                 disabled={!canPlayQuiz() || isStartingQuiz}
                 className={`w-full px-6 py-3 text-base font-semibold rounded-xl transition-all duration-300 ${canPlayQuiz() && !isStartingQuiz
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 size="default"
@@ -450,11 +476,11 @@ function EntranceCategoryPage() {
             </div>
 
             {/* Help Section */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
               <h3 className="text-lg font-bold text-gray-900 mb-3">How to Navigate</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mt-0.5">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
                     <BookOpen className="h-3.5 w-3.5 text-white" />
                   </div>
                   <div>
@@ -463,7 +489,7 @@ function EntranceCategoryPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mt-0.5">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
                     <FileText className="h-3.5 w-3.5 text-white" />
                   </div>
                   <div>
@@ -472,7 +498,7 @@ function EntranceCategoryPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mt-0.5">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
                     <AlertTriangle className="h-3.5 w-3.5 text-white" />
                   </div>
                   <div>
@@ -486,9 +512,9 @@ function EntranceCategoryPage() {
 
           {/* Center Column - Entrance Selection */}
           <div className="lg:col-span-6">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
               <h3 className="text-lg font-bold text-gray-900 mb-3">Select Your Entrance Exam</h3>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {entranceData?.entranceNames?.map((entranceName: string) => {
                   const entranceQuestions = entranceData.entranceQuestionData.filter(
                     (item: EntranceQuestionData) => item.entranceName === entranceName
@@ -505,10 +531,10 @@ function EntranceCategoryPage() {
                         onClick={() => toggleEntrance(entranceName)}
                       >
                         <div
-                          className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${isSelected("entrance", entranceName) ? "bg-blue-50 border-blue-200 shadow-lg" : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"}`}
+                          className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${isSelected("entrance", entranceName) ? "bg-purple-50 border-purple-200 shadow-lg" : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"}`}
                         >
                           <div
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected("entrance", entranceName) ? "bg-gradient-to-br from-blue-500 to-blue-600" : "bg-gradient-to-br from-blue-500 to-blue-600"}`}
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected("entrance", entranceName) ? "bg-gradient-to-br from-purple-500 to-purple-600" : "bg-gradient-to-br from-purple-500 to-purple-600"}`}
                           >
                             <BookOpen className="h-5 w-5 text-white" />
                           </div>
@@ -566,8 +592,8 @@ function EntranceCategoryPage() {
                         </div>
                       </div>
                       
-                                              {expandedEntrances.has(entranceName) && (
-                          <div className="mt-3 ml-3 space-y-3">
+                      {expandedEntrances.has(entranceName) && (
+                        <div className="mt-1.5 ml-3 space-y-1.5">
                           {/* Subjects with Difficulty Breakdown */}
                           <div className="space-y-1">
                             <h4 className="text-sm font-semibold text-gray-700 mb-2">Subjects:</h4>
@@ -641,8 +667,6 @@ function EntranceCategoryPage() {
                               </span>
                             </div>
                           </div>
-
-
                         </div>
                       )}
                     </div>
@@ -653,28 +677,86 @@ function EntranceCategoryPage() {
           </div>
 
           {/* Right Column - Quiz History */}
-          <div className="lg:col-span-3 space-y-6">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="lg:col-span-3 space-y-4">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
                   <Trophy className="h-5 w-5 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900">Quiz History</h3>
               </div>
               
-              <div className="text-center py-6">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Trophy className="h-6 w-6 text-gray-400" />
+              {isLoadingEntranceQuizHistory ? (
+                <div className="text-center py-4">
+                  <Loader2 className="h-6 w-6 text-purple-600 animate-spin mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Loading history...</p>
                 </div>
-                <p className="text-sm text-gray-500 mb-3">No entrance quiz history yet</p>
-                <Button
-                  onClick={() => router.push('/quizzes/competative')}
-                  variant="outline"
-                  className="w-full text-sm py-2 border-blue-300 text-blue-600 hover:bg-blue-50"
-                >
-                  View Entrance Quizzes
-                </Button>
-              </div>
+              ) : isErrorEntranceQuizHistory ? (
+                <div className="text-center py-4">
+                  <AlertTriangle className="h-6 w-6 text-red-500 mx-auto mb-2" />
+                  <p className="text-sm text-red-500">Error loading history</p>
+                </div>
+              ) : entranceQuizHistory?.questions ? (
+                <div className="space-y-3">
+                  {/* Recent Quiz Summary */}
+                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                    <div className="text-center mb-2">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {Math.round((entranceQuizHistory.questions.correctQuestions?.length || 0) / ((entranceQuizHistory.questions.correctQuestions?.length || 0) + (entranceQuizHistory.questions.wrongQuestions?.length || 0)) * 100)}%
+                      </div>
+                      <div className="text-xs text-purple-700 font-medium">Recent Score</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-bold text-green-600">{entranceQuizHistory.questions.correctQuestions?.length || 0}</div>
+                        <div className="text-gray-600">Correct</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold text-red-600">{entranceQuizHistory.questions.wrongQuestions?.length || 0}</div>
+                        <div className="text-gray-600">Wrong</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Stats */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Questions:</span>
+                      <span className="font-semibold text-gray-900">
+                        {(entranceQuizHistory.questions.correctQuestions?.length || 0) + (entranceQuizHistory.questions.wrongQuestions?.length || 0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Date:</span>
+                      <span className="font-semibold text-gray-900">
+                        {new Date(entranceQuizHistory.questions.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* View Full History Button */}
+                  <Button
+                    onClick={() => router.push('/quizzes/competative/user-quiz-history')}
+                    className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm py-2 rounded-lg"
+                  >
+                    View Full History
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 mb-3">No entrance quiz history yet</p>
+                  <Button
+                    onClick={() => router.push('/quizzes/competative/user-quiz-history')}
+                    variant="outline"
+                    className="w-full text-sm py-2 border-purple-300 text-purple-600 hover:bg-purple-50"
+                  >
+                    View History Page
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
