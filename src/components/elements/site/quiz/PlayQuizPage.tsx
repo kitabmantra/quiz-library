@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useGetAllAcademicCat } from "@/lib/hooks/tanstack-query/query-hook/quiz/users/use-get-all-academic-cat"
 import {
   GraduationCap,
@@ -14,6 +14,7 @@ import {
   Check,
   X,
   Play,
+  Trophy,
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -21,8 +22,10 @@ import toast from "react-hot-toast"
 import { AcademicCategories, CountQuestionItem } from "@/lib/types/quiz/quiz"
 import { useRouter } from "next/navigation"
 import { quizStorage } from "@/lib/utils/quiz-storage"
+import { useGetUserPastHistory } from "@/lib/hooks/tanstack-query/query-hook/quiz/quiz-history/use-get-user-past-history"
 function PlayQuizPage() {
   const { data, isLoading, error } = useGetAllAcademicCat()
+  const { data: pastHistory, isLoading: pastHistoryLoading, error: pastHistoryError } = useGetUserPastHistory()
   const [expandedLevels, setExpandedLevels] = useState<Set<string>>(new Set())
   const [expandedFaculties, setExpandedFaculties] = useState<Set<string>>(new Set())
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
@@ -33,6 +36,24 @@ function PlayQuizPage() {
   const [questionCountSelected, setQuestionCountSelected] = useState(true)
   const academicData = data?.data as AcademicCategories
   const countData: CountQuestionItem[] = Array.isArray(academicData?.countQuestionData) ? (academicData?.countQuestionData as CountQuestionItem[]) : []
+
+  
+
+
+  useEffect(()=>{
+    if(localStorage.getItem("qf")){
+      localStorage.removeItem("qf")
+    }
+    if(localStorage.getItem("questions")){
+      localStorage.removeItem("questions")
+    }
+    if(localStorage.getItem("quiz_start_time")){
+      localStorage.removeItem("quiz_start_time")
+    }
+    if(localStorage.getItem("quiz-storage")){
+      localStorage.removeItem("quiz-storage")
+    }
+  },[])
 
   const sumCounts = (items: CountQuestionItem[]) =>
     items.reduce((acc, curr) => acc + (typeof curr.count === "number" ? curr.count : 0), 0)
@@ -316,7 +337,7 @@ function PlayQuizPage() {
       </div>
     )
   }
-
+ 
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -353,27 +374,27 @@ function PlayQuizPage() {
       <div className="relative z-10 w-full p-4 lg:p-6">
         {/* Header Section */}
         <div className="text-center mb-6">
-          <div className="flex justify-center mb-3">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl">
-              <GraduationCap className="h-6 w-6 text-white" />
+          <div className="flex justify-center mb-4">
+            <div className="p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl">
+              <GraduationCap className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Academic Quiz</h1>
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Academic Quiz</h1>
           <p className="text-lg lg:text-xl text-gray-600">Select your subjects and start testing</p>
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-7xl mx-auto">
           {/* Left Column - Quiz Configuration & Filters */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-3 space-y-4">
             {/* Quiz Configuration Card */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-gray-900">Quiz Configuration</h3>
                 {(questionCountSelected || activeFilters.level || activeFilters.faculty || activeFilters.year || activeFilters.subjects.length > 0) && (
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <X className="h-4 w-4" />
                     <span className="hidden sm:inline">Clear</span>
@@ -382,8 +403,8 @@ function PlayQuizPage() {
               </div>
 
               {/* Question Count Selection */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-3">
+              <div className="mb-4">
+                <div className="flex items-center gap-3 mb-2">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${questionCountSelected ? 'bg-purple-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
                     1
                   </div>
@@ -405,7 +426,7 @@ function PlayQuizPage() {
                       }
                     }}
                   >
-                    <SelectTrigger className={`w-full ${questionCountSelected ? 'border-purple-300 bg-purple-50' : 'border-gray-300'}`}>
+                    <SelectTrigger className={`w-full h-10 text-base ${questionCountSelected ? 'border-purple-300 bg-purple-50' : 'border-gray-300'}`}>
                       <SelectValue placeholder="Select count" />
                     </SelectTrigger>
                     <SelectContent>
@@ -416,15 +437,15 @@ function PlayQuizPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-purple-600 font-medium mt-2 block">
+                  <span className="text-sm text-purple-600 font-medium mt-1 block">
                     ✓ {selectedNumber} questions selected
                   </span>
                 </div>
               </div>
 
               {/* Filter Selection */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-3">
+              <div className="mb-4">
+                <div className="flex items-center gap-3 mb-2">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${activeFilters.level ? 'bg-purple-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
                     2
                   </div>
@@ -442,9 +463,9 @@ function PlayQuizPage() {
 
               {/* Selected Filters Display */}
               {(activeFilters.level || activeFilters.faculty || activeFilters.year || activeFilters.subjects.length > 0) && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Selected Filters:</h4>
-                  <div className="space-y-2">
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-2">Selected Filters:</h4>
+                  <div className="space-y-1.5">
                     {activeFilters.level && (
                       <div className="bg-purple-50 border border-purple-200 text-purple-800 px-3 py-2 rounded-lg text-sm font-medium">
                         Level: {activeFilters.level.replace(/-/g, " ")}
@@ -467,12 +488,12 @@ function PlayQuizPage() {
                       >
                         {subject.replace(/-/g, " ")}
                         {(!activeFilters.faculty || !activeFilters.year) && (
-                          <span className="ml-1 text-xs">(incomplete)</span>
+                          <span className="ml-2 text-sm">(incomplete)</span>
                         )}
                       </div>
                     ))}
                     {activeFilters.subjects.length > 3 && (
-                      <div className="px-3 py-2 rounded-lg text-xs bg-orange-50 border border-orange-200 text-orange-800">
+                      <div className="px-3 py-2 rounded-lg text-sm bg-orange-50 border border-orange-200 text-orange-800">
                         +{activeFilters.subjects.length - 3} more subjects
                       </div>
                     )}
@@ -481,7 +502,7 @@ function PlayQuizPage() {
               )}
 
               {/* Status Message */}
-              <div className="mb-6">
+              <div className="mb-4">
                 <p className={`text-sm font-medium ${!activeFilters.level ? 'text-purple-600' :
                   canPlayQuiz() ? 'text-green-600' : 'text-red-600'
                   }`}>
@@ -503,40 +524,40 @@ function PlayQuizPage() {
                   }`}
                 size="default"
               >
-                <Play className="h-4 w-4 mr-2" />
+                <Play className="h-5 w-5 mr-3" />
                 Start Quiz
               </Button>
             </div>
 
             {/* Help Section */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">How to Navigate</h3>
-              <div className="space-y-4">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">How to Navigate</h3>
+              <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-1">
-                    <GraduationCap className="h-4 w-4 text-white" />
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
+                    <GraduationCap className="h-3.5 w-3.5 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-1 text-sm">Select Level</h4>
-                    <p className="text-xs text-gray-600">Click on any level to explore its faculties</p>
+                    <p className="text-sm text-gray-600">Click on any level to explore its faculties</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-1">
-                    <BookOpen className="h-4 w-4 text-white" />
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
+                    <BookOpen className="h-3.5 w-3.5 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-1 text-sm">Choose Faculty</h4>
-                    <p className="text-xs text-gray-600">Select your field of study</p>
+                    <p className="text-sm text-gray-600">Select your field of study</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-1">
-                    <Calendar className="h-4 w-4 text-white" />
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
+                    <Calendar className="h-3.5 w-3.5 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-1 text-sm">Pick Year</h4>
-                    <p className="text-xs text-gray-600">Choose your year and subjects</p>
+                    <p className="text-sm text-gray-600">Choose your year and subjects</p>
                   </div>
                 </div>
               </div>
@@ -544,40 +565,40 @@ function PlayQuizPage() {
           </div>
 
           {/* Right Column - Category Selection */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Select Your Academic Path</h3>
-              <div className="space-y-4">
+          <div className="lg:col-span-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Select Your Academic Path</h3>
+              <div className="space-y-2">
                 {academicData?.levels?.map((level) => {
                   const hasFaculties = hasSubcategories("level", level)
                   const faculties = Array.isArray(level?.faculties) ? level.faculties : []
                   const levelCount = getLevelCount(level.levelName)
                   return (
-                    <div key={level.levelName} className="relative pl-4">
+                    <div key={level.levelName} className="relative pl-3">
                       <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-300"></div>
                       <div
                         className={`${hasFaculties ? "cursor-pointer" : "cursor-default"}`}
                         onClick={() => hasFaculties && toggleLevel(level.levelName)}
                       >
                         <div
-                          className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${isSelected("level", level.levelName) ? "bg-purple-50 border-purple-200 shadow-lg" : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"}`}
+                          className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${isSelected("level", level.levelName) ? "bg-purple-50 border-purple-200 shadow-lg" : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"}`}
                         >
                           <div
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center ${isSelected("level", level.levelName) ? "bg-gradient-to-br from-purple-500 to-purple-600" : "bg-gradient-to-br from-purple-500 to-purple-600"}`}
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected("level", level.levelName) ? "bg-gradient-to-br from-purple-500 to-purple-600" : "bg-gradient-to-br from-purple-500 to-purple-600"}`}
                           >
                             <GraduationCap className="h-5 w-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h2 className="font-medium text-gray-800 capitalize text-sm truncate">
+                            <h2 className="font-medium text-gray-800 capitalize text-base truncate">
                               {level.levelName.replace(/-/g, " ")}
                             </h2>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm text-gray-500">
                               {hasFaculties ? `${faculties.length} Faculties` : "No Faculties"}
                               {" \u2022 "}
                               {levelCount} Questions
                             </p>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -585,39 +606,39 @@ function PlayQuizPage() {
                               }}
                               disabled={!hasFaculties}
                               variant={isSelected("level", level.levelName) ? "default" : "outline"}
-                              className="h-7 text-xs"
+                              className="h-8 text-sm px-4"
                             >
                               {!hasFaculties ? "No Faculties" : isSelected("level", level.levelName) ? (
-                                <div className="flex items-center gap-1">
-                                  <Check className="h-3 w-3" />
+                                <div className="flex items-center gap-2">
+                                  <Check className="h-4 w-4" />
                                   <span className="hidden sm:inline">Selected</span>
                                   <span className="sm:hidden">✓</span>
                                 </div>) : ("Select")}
                             </Button>
-                            <div className={`p-1 ${!hasFaculties ? 'opacity-30' : ''}`}>
+                            <div className={`p-2 ${!hasFaculties ? 'opacity-30' : ''}`}>
                               {expandedLevels.has(level.levelName) ? (
-                                <ChevronDown className="h-4 w-4 text-gray-500" />) : (<ChevronRight className="h-4 w-4 text-gray-500" />)}
+                                <ChevronDown className="h-5 w-5 text-gray-500" />) : (<ChevronRight className="h-5 w-5 text-gray-500" />)}
                             </div>
                           </div>
                         </div>
                       </div>
                       {expandedLevels.has(level.levelName) && (
-                        <div className="mt-3 ml-4 space-y-3">
+                        <div className="mt-1.5 ml-3 space-y-1.5">
                           {hasFaculties ? (
                             faculties.map((faculty) => {
                               const hasYears = hasSubcategories("faculty", faculty)
                               const years = Array.isArray(faculty?.years) ? faculty.years : []
                               const facultyCount = getFacultyCount(level.levelName, faculty.faculty)
                               return (
-                                <div key={faculty.faculty} className="relative pl-4">
+                                <div key={faculty.faculty} className="relative pl-3">
                                   <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-300"></div>
                                   <div className={`${hasYears ? "cursor-pointer" : "cursor-default"}`} onClick={() => hasYears && toggleFaculty(faculty.faculty)} >
                                     <div
-                                      className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${isSelected("faculty", faculty.faculty, level.levelName) ? "bg-purple-50 border-purple-200 shadow-lg" : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"}`}>
-                                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isSelected("faculty", faculty.faculty, level.levelName) ? "bg-gradient-to-br from-purple-500 to-purple-600" : "bg-gradient-to-br from-purple-500 to-purple-600"}`}> <BookOpen className="h-5 w-5 text-white" /> </div>
-                                      <div className="flex-1 min-w-0"> <h3 className="font-medium text-gray-800 capitalize text-sm truncate">{faculty.faculty.replace(/-/g, " ")}</h3><p className="text-xs text-gray-500"> {hasYears ? `${years.length} Years` : "No Years"} {" \u2022 "} {facultyCount} Questions</p>
+                                      className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-300 ${isSelected("faculty", faculty.faculty, level.levelName) ? "bg-purple-50 border-purple-200 shadow-lg" : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"}`}>
+                                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelected("faculty", faculty.faculty, level.levelName) ? "bg-gradient-to-br from-purple-500 to-purple-600" : "bg-gradient-to-br from-purple-500 to-purple-600"}`}> <BookOpen className="h-4.5 w-4.5 text-white" /> </div>
+                                      <div className="flex-1 min-w-0"> <h3 className="font-medium text-gray-800 capitalize text-sm truncate">{faculty.faculty.replace(/-/g, " ")}</h3><p className="text-sm text-gray-500"> {hasYears ? `${years.length} Years` : "No Years"} {" \u2022 "} {facultyCount} Questions</p>
                                       </div>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-3">
                                         <Button
                                           onClick={(e) => {
                                             e.stopPropagation()
@@ -625,37 +646,37 @@ function PlayQuizPage() {
                                           }}
                                           disabled={!hasYears}
                                           variant={isSelected("faculty", faculty.faculty, level.levelName) ? "default" : "outline"}
-                                          className="h-7 text-xs"
+                                          className="h-7 text-sm px-3"
                                         >
                                           {!hasYears ? "No Years" : isSelected("faculty", faculty.faculty, level.levelName) ? (
-                                            <div className="flex items-center gap-1"> <Check className="h-3 w-3" /> <span className="hidden sm:inline">Selected</span> <span className="sm:hidden">✓</span> </div>) : ("Select")}
+                                            <div className="flex items-center gap-2"> <Check className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Selected</span> <span className="sm:hidden">✓</span> </div>) : ("Select")}
                                         </Button>
-                                        <div className={`p-1 ${!hasYears ? 'opacity-30' : ''}`}>
+                                        <div className={`p-1.5 ${!hasYears ? 'opacity-30' : ''}`}>
                                           {expandedFaculties.has(faculty.faculty) ? (<ChevronDown className="h-4 w-4 text-gray-500" />) : (<ChevronRight className="h-4 w-4 text-gray-500" />)}
                                         </div>
                                       </div>
                                     </div>
                                   </div>
                                   {expandedFaculties.has(faculty.faculty) && (
-                                    <div className="mt-3 ml-4 space-y-3">
+                                    <div className="mt-1.5 ml-3 space-y-1.5">
                                       {hasYears ? (
                                         years.map((year) => {
                                           const hasSubjects = hasSubcategories("year", year)
                                           const yearSubjects = getSubjectsForYear(year.id)
                                           const yearCount = getYearCount(level.levelName, faculty.faculty, year.yearName)
                                           return (
-                                            <div key={year.id} className="relative pl-4">
+                                            <div key={year.id} className="relative pl-3">
                                               <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-300"></div>
                                               <div className={`${hasSubjects ? "cursor-pointer" : "cursor-default"}`} onClick={() => hasSubjects && toggleYear(year.id)} >
-                                                <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${isSelected("year", year.yearName, level.levelName, faculty.faculty) ? "bg-purple-50 border-purple-200 shadow-sm" : "bg-white border-gray-200 hover:bg-gray-50"}`}>
-                                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSelected("year", year.yearName, level.levelName, faculty.faculty) ? "bg-purple-600" : "bg-purple-600"}`} >
-                                                    <Calendar className="h-4 w-4 text-white" />
+                                                <div className={`flex items-center gap-3 p-2.5 rounded-lg border transition-all duration-200 ${isSelected("year", year.yearName, level.levelName, faculty.faculty) ? "bg-purple-50 border-purple-200 shadow-sm" : "bg-white border-gray-200 hover:bg-gray-50"}`}>
+                                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isSelected("year", year.yearName, level.levelName, faculty.faculty) ? "bg-purple-600" : "bg-purple-600"}`} >
+                                                    <Calendar className="h-3.5 w-3.5 text-white" />
                                                   </div>
                                                   <div className="flex-1 min-w-0">
                                                     <h4 className="font-medium text-gray-800 capitalize text-sm truncate"> {year.yearName.replace(/-/g, " ")}</h4>
-                                                    <p className="text-xs text-gray-500"> {hasSubjects ? `${yearSubjects.length} Subjects` : "No Subjects"} {" \u2022 "} {yearCount} Questions</p>
+                                                    <p className="text-sm text-gray-500"> {hasSubjects ? `${yearSubjects.length} Subjects` : "No Subjects"} {" \u2022 "} {yearCount} Questions</p>
                                                   </div>
-                                                  <div className="flex items-center gap-2">
+                                                  <div className="flex items-center gap-3">
                                                     <Button
                                                       onClick={(e) => {
                                                         e.stopPropagation()
@@ -663,20 +684,20 @@ function PlayQuizPage() {
                                                       }}
                                                       disabled={!hasSubjects}
                                                       variant={isSelected("year", year.yearName, level.levelName, faculty.faculty) ? "default" : "outline"}
-                                                      className="h-7 text-xs"
+                                                      className="h-7 text-sm px-3"
                                                     >
                                                       {!hasSubjects ? "No Subjects" : isSelected("year", year.yearName, level.levelName, faculty.faculty) ? (
-                                                        <div className="flex items-center gap-1"> <Check className="h-3 w-3" /> <span className="hidden sm:inline">Selected</span> <span className="sm:hidden">✓</span> </div>) : ("Select")}
+                                                        <div className="flex items-center gap-2"> <Check className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Selected</span> <span className="sm:hidden">✓</span> </div>) : ("Select")}
                                                     </Button>
-                                                    <div className={`p-1 ${!hasSubjects ? 'opacity-30' : ''}`}>  {expandedYears.has(year.id) ? (<ChevronDown className="h-4 w-4 text-gray-500" />) : (<ChevronRight className="h-4 w-4 text-gray-500" />)} </div>
+                                                    <div className={`p-1.5 ${!hasSubjects ? 'opacity-30' : ''}`}>  {expandedYears.has(year.id) ? (<ChevronDown className="h-4 w-4 text-gray-500" />) : (<ChevronRight className="h-4 w-4 text-gray-500" />)} </div>
                                                   </div>
                                                 </div>
                                               </div>
                                               {expandedYears.has(year.id) && (
-                                                <div className="mt-3 ml-4 space-y-2">
+                                                <div className="mt-1.5 ml-3 space-y-1">
                                                   {hasSubjects ? (
                                                     yearSubjects.map((subject) => (
-                                                      <div key={subject.name} className="relative pl-4">
+                                                      <div key={subject.name} className="relative pl-3">
                                                         <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-300"></div>
                                                         <div onClick={(e) => { e.stopPropagation(); handleSubjectSelect(subject.name, level.levelName, faculty.faculty, year.yearName) }}
                                                           className={`flex items-center gap-3 p-2 rounded-lg border transition-all duration-200 cursor-pointer ${isSelected("subject", subject.name, level.levelName, faculty.faculty, year.yearName) ? "bg-orange-50 border-orange-200 shadow-sm" : "bg-white border-gray-200 hover:bg-gray-50"}`}
@@ -684,20 +705,20 @@ function PlayQuizPage() {
                                                           <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${isSelected("subject", subject.name, level.levelName, faculty.faculty, year.yearName) ? "bg-orange-600" : "bg-gray-200"}`}>
                                                             <FileText className={`h-3 w-3 ${isSelected("subject", subject.name, level.levelName, faculty.faculty, year.yearName) ? "text-white" : "text-gray-600"}`} />
                                                           </div>
-                                                          <span className={`text-xs font-medium capitalize flex-1 truncate ${isSelected("subject", subject.name, level.levelName, faculty.faculty, year.yearName) ? "text-orange-800" : "text-gray-700"}`}>
+                                                          <span className={`text-sm font-medium capitalize flex-1 truncate ${isSelected("subject", subject.name, level.levelName, faculty.faculty, year.yearName) ? "text-orange-800" : "text-gray-700"}`}>
                                                             {subject.name.replace(/-/g, " ")}
                                                           </span>
-                                                          <span className="text-xs text-gray-500 mr-2 hidden sm:inline">
+                                                          <span className="text-sm text-gray-500 mr-2 hidden sm:inline">
                                                             {getSubjectCount(level.levelName, faculty.faculty, year.yearName, subject.name,
                                                             )} Questions
                                                           </span>
                                                           <Button
                                                             variant={isSelected("subject", subject.name, level.levelName, faculty.faculty, year.yearName) ? "default" : "outline"}
-                                                            className="h-6 text-xs"
+                                                            className="h-6 text-sm px-3"
                                                           >
                                                             {isSelected("subject", subject.name, level.levelName, faculty.faculty, year.yearName) ? (
-                                                              <div className="flex items-center gap-1">
-                                                                <Check className="h-3 w-3" />
+                                                              <div className="flex items-center gap-2">
+                                                                <Check className="h-3.5 w-3.5" />
                                                                 <span className="hidden sm:inline">Selected</span>
                                                                 <span className="sm:hidden">✓</span>
                                                               </div>
@@ -709,11 +730,11 @@ function PlayQuizPage() {
                                                       </div>
                                                     ))
                                                   ) : (
-                                                    <div className="relative pl-4">
+                                                    <div className="relative pl-3">
                                                       <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-300"></div>
-                                                      <div className="flex items-center gap-3 p-2 rounded-lg border bg-gray-50 border-gray-200">
-                                                        <div className="w-6 h-6 rounded-lg bg-gray-200 flex items-center justify-center">
-                                                          <FileText className="h-3 w-3 text-gray-400" />
+                                                      <div className="flex items-center gap-2 p-1.5 rounded-lg border bg-gray-50 border-gray-200">
+                                                        <div className="w-5 h-5 rounded-lg bg-gray-200 flex items-center justify-center">
+                                                          <FileText className="h-2.5 w-2.5 text-gray-400" />
                                                         </div>
                                                         <span className="text-xs font-medium text-gray-500 capitalize flex-1">
                                                           No subjects available for {year.yearName.replace(/-/g, " ")}
@@ -727,14 +748,14 @@ function PlayQuizPage() {
                                           )
                                         })
                                       ) : (
-                                        <div className="relative pl-4">
+                                        <div className="relative pl-3">
                                           <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-300"></div>
-                                          <div className="flex items-center gap-3 p-3 rounded-lg border bg-gray-50 border-gray-200">
-                                            <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
-                                              <Calendar className="h-4 w-4 text-gray-400" />
+                                          <div className="flex items-center gap-2 p-2 rounded-lg border bg-gray-50 border-gray-200">
+                                            <div className="w-6 h-6 rounded-lg bg-gray-200 flex items-center justify-center">
+                                              <Calendar className="h-3 w-3 text-gray-400" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                              <h4 className="font-medium text-gray-500 capitalize text-sm truncate">
+                                              <h4 className="font-medium text-gray-500 capitalize text-xs truncate">
                                                 No years available for {faculty.faculty.replace(/-/g, " ")}
                                               </h4>
                                               <p className="text-xs text-gray-400">
@@ -750,14 +771,14 @@ function PlayQuizPage() {
                               )
                             })
                           ) : (
-                            <div className="relative pl-4">
+                            <div className="relative pl-3">
                               <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-300"></div>
-                              <div className="flex items-center gap-3 p-3 rounded-lg border bg-gray-50 border-gray-200">
-                                <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
-                                  <BookOpen className="h-4 w-4 text-gray-400" />
+                              <div className="flex items-center gap-2 p-2 rounded-lg border bg-gray-50 border-gray-200">
+                                <div className="w-6 h-6 rounded-lg bg-gray-200 flex items-center justify-center">
+                                  <BookOpen className="h-3 w-3 text-gray-400" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <h3 className="font-medium text-gray-500 capitalize text-sm truncate">
+                                  <h3 className="font-medium text-gray-500 capitalize text-xs truncate">
                                     No faculties available for {level.levelName.replace(/-/g, " ")}
                                   </h3>
                                   <p className="text-xs text-gray-400">This level has no faculties configured</p>
@@ -771,6 +792,91 @@ function PlayQuizPage() {
                   )
                 })}
               </div>
+            </div>
+          </div>
+
+          {/* New Right Column - User Quiz History */}
+          <div className="lg:col-span-3 space-y-4">
+            {/* User Quiz History Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
+                  <Trophy className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">Quiz History</h3>
+              </div>
+              
+              {pastHistoryLoading ? (
+                <div className="text-center py-4">
+                  <Loader2 className="h-6 w-6 text-purple-600 animate-spin mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Loading history...</p>
+                </div>
+              ) : pastHistoryError ? (
+                <div className="text-center py-4">
+                  <AlertTriangle className="h-6 w-6 text-red-500 mx-auto mb-2" />
+                  <p className="text-sm text-red-500">Error loading history</p>
+                </div>
+              ) : pastHistory?.questions ? (
+                <div className="space-y-3">
+                  {/* Recent Quiz Summary */}
+                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                    <div className="text-center mb-2">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {Math.round((pastHistory.questions.correctQuestions?.length || 0) / ((pastHistory.questions.correctQuestions?.length || 0) + (pastHistory.questions.wrongQuestions?.length || 0)) * 100)}%
+                      </div>
+                      <div className="text-xs text-purple-700 font-medium">Recent Score</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-bold text-green-600">{pastHistory.questions.correctQuestions?.length || 0}</div>
+                        <div className="text-gray-600">Correct</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold text-red-600">{pastHistory.questions.wrongQuestions?.length || 0}</div>
+                        <div className="text-gray-600">Wrong</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Stats */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Questions:</span>
+                      <span className="font-semibold text-gray-900">
+                        {(pastHistory.questions.correctQuestions?.length || 0) + (pastHistory.questions.wrongQuestions?.length || 0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Date:</span>
+                      <span className="font-semibold text-gray-900">
+                        {new Date(pastHistory.questions.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* View Full History Button */}
+                  <Button
+                    onClick={() => router.push('/quizzes/academic/category-selection/user-quiz-history')}
+                    className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm py-2 rounded-lg"
+                  >
+                    View Full History
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 mb-3">No quiz history yet</p>
+                  <Button
+                    onClick={() => router.push('/quizzes/academic/category-selection/user-quiz-history')}
+                    variant="outline"
+                    className="w-full text-sm py-2 border-purple-300 text-purple-600 hover:bg-purple-50"
+                  >
+                    View History Page
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

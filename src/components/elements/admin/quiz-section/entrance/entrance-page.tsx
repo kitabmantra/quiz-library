@@ -42,7 +42,7 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { toast } from "react-hot-toast"
-import { createEntrance } from "@/lib/actions/quiz/entrance/post/create-entrance"
+import { createEntrance, CreateEntranceType } from "@/lib/actions/quiz/entrance/post/create-entrance"
 import { CreateEntranceQuestionRequest } from "@/lib/types/quiz/quiz"
 import { useQueryClient } from "@tanstack/react-query"
 import {
@@ -148,6 +148,7 @@ interface EntranceCategory {
 
 function EntranceManagementPage() {
   const { data: entrance, isLoading, error } = useGetAllEntrance()
+  console.log("this sihte all teh entrance data  ",entrance)
   const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [updating, setUpdating] = useState(false)
@@ -196,9 +197,9 @@ function EntranceManagementPage() {
       if (creating) return
       setCreating(true)
       try {
-        const formData: CreateEntranceQuestionRequest = {
+        const formData: CreateEntranceType = {
           entranceName: values.entranceName,
-          questions: [],
+          type : "entrance"
         }
         const res = await createEntrance(formData)
         if (res.success) {

@@ -8,11 +8,15 @@ import { get_cookies } from "@/lib/utils/get-cookie";
 import axios from "axios";
 import { getBackendUrl } from "@/lib/utils/get-backendurl";
 
+export interface CreateEntranceType{
+    entranceName  : string,
+    type : "entrance" | "academic"
+}
 
-export async function createEntrance(data: CreateEntranceQuestionRequest) {
+export async function createEntrance(data: CreateEntranceType) {
     try {
-        const { entranceName, questions } = data;
-        if (!entranceName || !questions) throw new Error("Invalid request")
+        const { entranceName, type } = data;
+        if (!entranceName || !type) throw new Error("Invalid request")
         const user_token = await get_cookies("user_token");
         if (!user_token) throw new Error("unauthorized")
         const currentUser = await getCurrentUser();

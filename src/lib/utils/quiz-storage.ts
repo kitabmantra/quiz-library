@@ -5,17 +5,17 @@ import { QuizQuestion } from '@/lib/hooks/tanstack-query/query-hook/quiz/quiz-qu
 const QUIZ_FILTER_KEY = 'qf'
 const QUIZ_QUESTIONS_KEY = 'questions'
 const QUIZ_START_TIME_KEY = 'quiz_start_time'
-const QUIZ_TIMEOUT_MINUTES = 30 // 1 hour
+const QUIZ_TIMEOUT_MINUTES = 30
 
 export interface QuizStorageData {
   filter: Filter
   questions: QuizQuestion[]
-  questionsMap: Map<string, QuizQuestion> // Map for O(1) question lookup with correct type
+  questionsMap: Map<string, QuizQuestion>
   startTime: number
 }
 
 export const quizStorage = {
-  storeQuizData: (filter: Filter, questions: QuizQuestion[]) => {
+  storeQuizData: (filter: Filter, questions: QuizQuestion[], shouldShuffle: boolean = true) => {
     const startTime = Date.now()
     const shuffleArray = <T>(array: T[]): T[] => {
       const shuffled = [...array]
@@ -25,15 +25,25 @@ export const quizStorage = {
       }
       return shuffled
     }
-    const shuffledQuestions = shuffleArray(questions).map(q => ({
-      ...q,
-      shuffledOptions: shuffleArray(q.options) 
-    }))
-    console.log("this is the shuffled questions : ", shuffledQuestions)
+    
+    let processedQuestions;
+    if (shouldShuffle) {
+      processedQuestions = shuffleArray(questions).map(q => ({
+        ...q,
+        shuffledOptions: shuffleArray(q.options) 
+      }))
+    } else {
+      processedQuestions = questions.map(q => ({
+        ...q,
+        shuffledOptions: shuffleArray(q.options)
+      }))
+    }
+    
+    console.log("this is the processed questions : ", processedQuestions)
     console.log("this is the filter : ", filter)
     const encodedFilter = encodeBase64(JSON.stringify(filter))
     localStorage.setItem(QUIZ_FILTER_KEY, encodedFilter)
-    const encodedQuestions = encodeBase64(JSON.stringify(shuffledQuestions))
+    const encodedQuestions = encodeBase64(JSON.stringify(processedQuestions))
     localStorage.setItem(QUIZ_QUESTIONS_KEY, encodedQuestions)
     localStorage.setItem(QUIZ_START_TIME_KEY, startTime.toString())
   },

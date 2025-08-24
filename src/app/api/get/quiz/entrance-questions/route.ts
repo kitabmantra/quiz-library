@@ -14,17 +14,20 @@ export async function GET(request: Request) {
         const currentUser = await getCurrentUser();
         if (!currentUser) throw new Error("User not found")
         const searchParams = new URL(request.url).searchParams
-        const levelName = searchParams.get("levelName")
-        if (!levelName) throw new Error("Level name not found")
+        const entranceName = searchParams.get("entranceName")
+        if (!entranceName) throw new Error("Entrance name not found")
 
-        const faculty = searchParams.get("faculty")
-        const yearName = searchParams.get("yearName")
-        const subjectName = searchParams.get("subjectName")
-        const numberOfQuestions = searchParams.get("numberOfQuestions") || "10"
+            const subjectName = searchParams.get("subjectName")
+            const numberOfQuestions = searchParams.get("numberOfQuestions") || "10"
+            let difficulty = searchParams.get("difficulty") || "easy"
+            if (difficulty === "all") {
+                difficulty = ""
+            }
+
 
         const url = await getBackendUrl();
 
-        const res = await axios.get(`${url}/api/v1/quiz-service/user-quiz-questions?levelName=${levelName}&faculty=${faculty}&yearName=${yearName}&subjectName=${subjectName}&numberOfQuestions=${numberOfQuestions}`, {
+        const res = await axios.get(`${url}/api/v1/entrance-quiz-service/get-entrance-quiz-questions?entranceName=${entranceName}&subjectName=${subjectName}&numberOfQuestions=${numberOfQuestions}&difficulty=${difficulty}`, {
             withCredentials: true,
             headers: {
                 Cookie: `user_token=${user_token}`

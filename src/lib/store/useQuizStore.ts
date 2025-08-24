@@ -16,7 +16,7 @@ export interface QuizProgress {
   currentQuestionIndex: number
   answers: QuizAnswer[]
   startTime: number
-  currentQuestionStartTime: number // Track when current question started
+  currentQuestionStartTime: number
   totalTime: number
   isCompleted: boolean
   score: number
@@ -28,12 +28,10 @@ export interface QuizProgress {
 }
 
 export interface QuizState {
-  // Quiz data
   questions: QuizQuestion[]
   currentQuestion: QuizQuestion | null
   progress: QuizProgress | null
   
-  // Timer state
   timeRemaining: number
   isTimerRunning: boolean
   timerInterval: NodeJS.Timeout | null
@@ -56,6 +54,7 @@ export interface QuizState {
   getTimeLimit: (difficulty: string) => number
   getQuestionById: (questionId: string) => QuizQuestion | null
   calculateScore: () => void
+  cleanup: () => void
 }
 
 export const useQuizStore = create<QuizState>()(
@@ -74,10 +73,8 @@ export const useQuizStore = create<QuizState>()(
       initializeQuiz: (questions: QuizQuestion[]) => {
         const existingProgress = get().progress;
         const existingQuestions = get().questions;
-        
-        if (existingProgress && existingQuestions.length === questions.length && 
-            existingQuestions.every((q, i) => q.id === questions[i].id)) {
-          
+        get().stopTimer();
+        if (existingProgress && existingQuestions.length === questions.length) {
           const currentIndex = existingProgress.currentQuestionIndex;
           const currentQuestion = questions[currentIndex] || questions[0];
           
@@ -87,29 +84,49 @@ export const useQuizStore = create<QuizState>()(
             remainingTime = Math.max(0, get().getTimeLimit(currentQuestion.difficulty) - timeSinceQuestionStart);
           }
           
+          const updatedProgress = existingProgress;
+          
           set({
             questions,
             currentQuestion,
-            progress: existingProgress,
+            progress: updatedProgress,
             timeRemaining: remainingTime,
             isQuizStarted: existingProgress.answers.length > 0, 
             isQuizCompleted: existingProgress.isCompleted,
             showResults: false,
+            isTimerRunning: false,
+            timerInterval: null,   
           })
           
           if (existingProgress.answers.length > 0 && !existingProgress.isCompleted && remainingTime > 0) {
-            console.log(`Resuming quiz - starting timer with ${remainingTime}s remaining`);
-            get().startTimer();
           } else if (remainingTime <= 0) {
             console.log('Time has run out during resume - marking as timeout');
-            get().updateTimer(); // This will handle the timeout logic
+            if (currentQuestion && existingProgress) {
+              const timeoutAnswer: QuizAnswer = {
+                questionId: currentQuestion.id,
+                selectedAnswer: '',
+                isCorrect: false,
+                timeSpent: get().getTimeLimit(currentQuestion.difficulty),
+                timestamp: Date.now(),
+                isTimeout: true,
+              }
+
+              const newProgress = {
+                ...existingProgress,
+                answers: [...existingProgress.answers, timeoutAnswer],
+                wrongAnswers: existingProgress.wrongAnswers + 1,
+                timeoutAnswers: existingProgress.timeoutAnswers + 1,
+              }
+
+              set({ progress: newProgress })
+            }
           }
         } else {
           const progress: QuizProgress = {
             currentQuestionIndex: 0,
             answers: [],
             startTime: Date.now(),
-            currentQuestionStartTime: Date.now(), // Initialize current question start time
+            currentQuestionStartTime: Date.now(),
             totalTime: 0,
             isCompleted: false,
             score: 0,
@@ -128,12 +145,20 @@ export const useQuizStore = create<QuizState>()(
             isQuizStarted: false,
             isQuizCompleted: false,
             showResults: false,
+            isTimerRunning: false,
+            timerInterval: null,   // Clear any existing interval
           })
         }
       },
 
       startQuiz: () => {
-        const { progress } = get()
+        const { progress, isTimerRunning } = get()
+        
+        if (isTimerRunning) {
+          console.log('Quiz already started and timer running, skipping startQuiz call')
+          return
+        }
+        
         if (progress) {
           set({ 
             isQuizStarted: true,
@@ -145,6 +170,7 @@ export const useQuizStore = create<QuizState>()(
         } else {
           set({ isQuizStarted: true })
         }
+        
         get().startTimer()
       },
 
@@ -172,12 +198,12 @@ export const useQuizStore = create<QuizState>()(
           answers: [...progress.answers, quizAnswer],
           correctAnswers: progress.correctAnswers + (isCorrect ? 1 : 0),
           wrongAnswers: progress.wrongAnswers + (isCorrect ? 0 : 1),
-          currentQuestionStartTime: Date.now(), // Update start time for next question
+          currentQuestionStartTime: Date.now(),
         }
 
         set({ progress: newProgress })
         get().stopTimer()
-        console.log(`Answer recorded: ${answer}, correct: ${isCorrect}`)
+        console.log(`Answer recorded: ${answer}, correct: ${isCorrect}, timer stopped`);
       },
 
       nextQuestion: () => {
@@ -206,9 +232,8 @@ export const useQuizStore = create<QuizState>()(
           timeRemaining: get().getTimeLimit(nextQuestion.difficulty),
         })
 
+        console.log(`Moved to question ${nextIndex + 1}, starting timer with ${get().getTimeLimit(nextQuestion.difficulty)}s`)
         get().startTimer()
-        
-        console.log(`Moved to question ${nextIndex + 1}, timer reset to ${get().getTimeLimit(nextQuestion.difficulty)}s`)
       },
 
 
@@ -236,9 +261,12 @@ export const useQuizStore = create<QuizState>()(
 
         get().calculateScore()
         get().stopTimer()
+        console.log('Quiz completed, timer stopped');
       },
 
       resetQuiz: () => {
+        get().stopTimer();
+        
         set({
           questions: [],
           currentQuestion: null,
@@ -251,10 +279,13 @@ export const useQuizStore = create<QuizState>()(
           showResults: false,
         })
         quizStorage.clearAllQuizData();
+        console.log('Quiz completely reset, timer stopped');
       },
 
       resetProgressOnly: () => {
-        // Only reset progress/score data, keep questions
+        // Stop any running timer first
+        get().stopTimer();
+        
         set({
           currentQuestion: null,
           progress: null,
@@ -265,14 +296,16 @@ export const useQuizStore = create<QuizState>()(
           isQuizCompleted: false,
           showResults: false,
         })
-        // Don't clear questions from localStorage
+        console.log('Quiz progress reset, timer stopped');
       },
       
 
       startTimer: () => {
-        const { timerInterval } = get()
-        if (timerInterval) {
-          clearInterval(timerInterval)
+        const { timerInterval, isTimerRunning } = get()
+        
+        if (isTimerRunning || timerInterval) {
+          console.log('Timer already running, stopping existing timer first')
+          get().stopTimer()
         }
 
         const interval = setInterval(() => {
@@ -284,7 +317,7 @@ export const useQuizStore = create<QuizState>()(
           timerInterval: interval 
         })
         
-        console.log('Timer started')
+        console.log('Timer started with interval:', interval)
       },
 
       stopTimer: () => {
@@ -295,14 +328,18 @@ export const useQuizStore = create<QuizState>()(
             isTimerRunning: false, 
             timerInterval: null 
           })
-          console.log('Timer stopped')
+          console.log('Timer stopped, interval cleared:', timerInterval)
         }
       },
 
       updateTimer: () => {
-        const { timeRemaining, currentQuestion, progress, isTimerRunning } = get()
+        const { timeRemaining, currentQuestion, progress, isTimerRunning, timerInterval } = get()
         
-        if (!isTimerRunning) return
+        if (!isTimerRunning || !timerInterval) {
+          console.log('Timer update called but timer not running, stopping')
+          get().stopTimer()
+          return
+        }
         
         if (timeRemaining <= 0) {
           if (currentQuestion && progress) {
@@ -337,7 +374,12 @@ export const useQuizStore = create<QuizState>()(
           return
         }
 
-        set({ timeRemaining: timeRemaining - 1 })
+        const newTimeRemaining = Math.max(0, timeRemaining - 1)
+        set({ timeRemaining: newTimeRemaining })
+        
+        if (newTimeRemaining % 5 === 0 || newTimeRemaining <= 10) {
+          console.log(`Timer update: ${newTimeRemaining}s remaining`)
+        }
       },
 
       getTimeLimit: (difficulty: string) => {
@@ -369,6 +411,21 @@ export const useQuizStore = create<QuizState>()(
         })
       },
 
+      cleanup: () => {
+        get().stopTimer();
+        set({
+          isQuizStarted: false,
+          isQuizCompleted: false,
+          showResults: false,
+          isTimerRunning: false,
+          timerInterval: null,
+          timeRemaining: 0,
+          currentQuestion: null,
+          progress: null,
+        });
+        console.log('Quiz store cleanup complete.');
+      },
+
 
     }),
     {
@@ -379,6 +436,15 @@ export const useQuizStore = create<QuizState>()(
         isQuizStarted: state.isQuizStarted,
         isQuizCompleted: state.isQuizCompleted,
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('Store rehydrated:', {
+          hasQuestions: !!state?.questions?.length,
+          hasProgress: !!state?.progress,
+          answersCount: state?.progress?.answers?.length || 0,
+          isCompleted: state?.progress?.isCompleted || false,
+          isQuizStarted: state?.isQuizStarted || false
+        });
+      },
     }
   )
 )
