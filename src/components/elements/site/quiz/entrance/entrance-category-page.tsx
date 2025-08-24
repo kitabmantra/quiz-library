@@ -209,6 +209,7 @@ function EntranceCategoryPage() {
         // Store entrance quiz data with entrance-specific keys
         localStorage.setItem("entrance-qf", JSON.stringify(activeFilters))
         localStorage.setItem("entrance-questions", JSON.stringify([]))
+        
         localStorage.setItem("entrance-quiz_start_time", Date.now().toString())
         localStorage.setItem("entrance-quiz-storage", JSON.stringify({
           filter: activeFilters,
