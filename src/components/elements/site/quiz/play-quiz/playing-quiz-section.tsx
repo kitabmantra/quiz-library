@@ -43,6 +43,7 @@ function PlayingQuizSection() {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [showCheatingAlert, setShowCheatingAlert] = useState(false);
   const [cheatingCountdown, setCheatingCountdown] = useState(3);
+  const [isTabSwitching, setIsTabSwitching] = useState(false);
 
 
   const {
@@ -226,7 +227,6 @@ function PlayingQuizSection() {
           e.returnValue = 'Your quiz progress will be lost. Are you sure you want to leave?';
           return 'Your quiz progress will be lost. Are you sure you want to leave?';
         }
-        useQuizStore.getState().resetProgressOnly();
         e.preventDefault();
         e.returnValue = 'Your quiz progress will be lost. Are you sure you want to leave?';
         return 'Your quiz progress will be lost. Are you sure you want to leave?';
@@ -260,33 +260,16 @@ function PlayingQuizSection() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('keydown', handleKeyDown);
     
-    // Listen for page visibility changes (when user switches tabs or navigates away)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        handleBeforeNavigate();
-      }
-    };
+
     
     // Listen for copy events to detect cheating
     const handleCopy = (e: ClipboardEvent) => {
       const currentState = useQuizStore.getState();
       if (currentState.progress && currentState.progress.answers.length > 0 && !currentState.progress.isCompleted) {
         e.preventDefault();
+        setIsTabSwitching(false);
         setShowCheatingAlert(true);
         setCheatingCountdown(3);
-        
-        // Start countdown timer
-        const countdownInterval = setInterval(() => {
-          setCheatingCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(countdownInterval);
-              useQuizStore.getState().resetProgressOnly();
-              setShowCheatingAlert(false);
-              return 3;
-            }
-            return prev - 1;
-          });
-        }, 1000);
       }
     };
     
@@ -295,21 +278,9 @@ function PlayingQuizSection() {
       const currentState = useQuizStore.getState();
       if (currentState.progress && currentState.progress.answers.length > 0 && !currentState.progress.isCompleted) {
         e.preventDefault();
+        setIsTabSwitching(false);
         setShowCheatingAlert(true);
         setCheatingCountdown(3);
-        
-        // Start countdown timer
-        const countdownInterval = setInterval(() => {
-          setCheatingCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(countdownInterval);
-              useQuizStore.getState().resetProgressOnly();
-              setShowCheatingAlert(false);
-              return 3;
-            }
-            return prev - 1;
-          });
-        }, 1000);
       }
     };
     
@@ -319,26 +290,13 @@ function PlayingQuizSection() {
       if (currentState.progress && currentState.progress.answers.length > 0 && !currentState.progress.isCompleted) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
           e.preventDefault();
+          setIsTabSwitching(false);
           setShowCheatingAlert(true);
           setCheatingCountdown(3);
-          
-          // Start countdown timer
-          const countdownInterval = setInterval(() => {
-            setCheatingCountdown(prev => {
-              if (prev <= 1) {
-                clearInterval(countdownInterval);
-                useQuizStore.getState().resetProgressOnly();
-                setShowCheatingAlert(false);
-                return 3;
-              }
-              return prev - 1;
-            });
-          }, 1000);
         }
       }
     };
     
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('copy', handleCopy);
     document.addEventListener('contextmenu', handleContextMenu); // Add context menu listener
     document.addEventListener('keydown', handleKeyDownCopy); // Add keyboard shortcut listener
@@ -347,7 +305,6 @@ function PlayingQuizSection() {
       clearTimeout(hydrationTimer);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('copy', handleCopy);
       document.removeEventListener('contextmenu', handleContextMenu); // Remove context menu listener
       document.removeEventListener('keydown', handleKeyDownCopy); // Remove keyboard shortcut listener
@@ -367,6 +324,57 @@ function PlayingQuizSection() {
       setCheatingCountdown(3);
     };
   }, [isStoreHydrated]);
+
+  // Handle cheating countdown and progress reset
+  useEffect(() => {
+    if (showCheatingAlert && cheatingCountdown > 0) {
+      const countdownInterval = setInterval(() => {
+        setCheatingCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            // Reset progress after countdown ends
+            setTimeout(() => {
+              useQuizStore.getState().resetProgressOnly();
+              useQuizStore.getState().resetQuiz();
+              // Force re-initialization of quiz
+              if (questions.length > 0) {
+                useQuizStore.getState().initializeQuiz(questions);
+                // Reset quiz started state
+                useQuizStore.getState().stopTimer();
+              }
+              setShowCheatingAlert(false);
+              setCheatingCountdown(3);
+            }, 100);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(countdownInterval);
+    }
+  }, [showCheatingAlert, cheatingCountdown, questions]);
+
+  // Handle tab switching - show cheating alert with countdown
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        const currentState = useQuizStore.getState();
+        if (currentState.progress && currentState.progress.answers.length > 0 && !currentState.progress.isCompleted) {
+          // Show cheating alert for tab switching (same as copying)
+          setIsTabSwitching(true);
+          setShowCheatingAlert(true);
+          setCheatingCountdown(3);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
 
 
@@ -424,7 +432,6 @@ function PlayingQuizSection() {
   };
 
   const stopQuizAndRedirect = () => {
-    // Clear all quiz data and redirect
     quizStorage.clearAllQuizData();
     resetQuiz();
     setQuestions([]);
@@ -441,7 +448,6 @@ function PlayingQuizSection() {
   };
 
   const navigateToCategories = () => {
-    // For back to categories: clear everything and redirect to fetch new questions
     quizStorage.clearAllQuizData();
     resetQuiz();
     setQuestions([]);
@@ -463,13 +469,11 @@ function PlayingQuizSection() {
     const currentState = useQuizStore.getState();
     console.log("iamtrpiggered")
     
-    // Always clear all localStorage data when going back
     localStorage.removeItem("quiz-storage")
     localStorage.removeItem("quiz_start_time")
     localStorage.removeItem("qf")
     localStorage.removeItem("questions")
     
-    // Also clear any other quiz-related data
     const keysToRemove = [
       'quiz_progress',
       'quiz_state',
@@ -947,7 +951,7 @@ function PlayingQuizSection() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="w-5 h-5 text-red-500" />
-              Cheating Detected!
+              {isTabSwitching ? 'Tab Switching Detected!' : 'Cheating Detected!'}
             </AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-left space-y-4">
@@ -962,7 +966,10 @@ function PlayingQuizSection() {
               </div>
               <p className="text-sm text-red-700 font-medium text-center">⚠️ Warning:</p>
               <p className="text-sm text-red-600 text-center">
-                Copying quiz content is not allowed. Please answer questions independently.
+                {isTabSwitching 
+                  ? "Switching tabs during the quiz is considered cheating. Please stay on this page and answer questions independently."
+                  : "Copying quiz content is not allowed. Please answer questions independently."
+                }
               </p>
             </div>
           </div>
@@ -971,6 +978,7 @@ function PlayingQuizSection() {
               onClick={() => {
                 setShowCheatingAlert(false);
                 setCheatingCountdown(3);
+                setIsTabSwitching(false);
               }}
               className="bg-red-500 hover:bg-red-600"
               disabled
