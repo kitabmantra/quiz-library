@@ -240,7 +240,7 @@ async function Home() {
                   : "Join thousands of successful learners who have already improved their skills with QuizMaster."
                 }
               </p>
-              {user ? (
+              {user.user ? (
                 <Link
                   href="/quizzes"
                   className="inline-block px-10 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
