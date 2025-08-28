@@ -3,12 +3,13 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Brain, FileText, Upload, Image, FileText as FilePdf, Trash2, Edit, Plus, Check, Settings } from "lucide-react"
+import { Brain, FileText,  Image, FileText as FilePdf, Trash2, Edit, Plus, Check, Settings } from "lucide-react"
 import toast from "react-hot-toast"
 import { QuestionData } from "@/lib/types/quiz/quiz"
 import { extractQuestionsFromText } from "@/lib/actions/ai/extract-question"
 import { extractQuestionsFromImage } from "@/lib/actions/ai/extract-question-from-image"
 import { useUploadThing } from '@/lib/utils/uploadthing-client'
+import { removeMultipleImages } from '@/lib/actions/uploadthing/delete-images'
 
 interface GenerateQuestionWithAIProps {
   onQuestionsGenerated: (questions: QuestionData[]) => void
@@ -197,6 +198,9 @@ function GenerateQuestionWithAI({ onQuestionsGenerated, onAddToManualList, isSav
       toast.error(`Failed to extract text from image. Please try again.`);
     } finally {
       setIsExtractingFromImage(false)
+      if(uploadedImage && uploadedImage.length > 0){
+        await removeMultipleImages([uploadedImage])
+      }
     }
   }, [selectedImageFile, imageGenerationPrompt, onQuestionsGenerated, showCustomSettings, customSubjectName, customTags, startUpload])
 
@@ -335,28 +339,9 @@ function GenerateQuestionWithAI({ onQuestionsGenerated, onAddToManualList, isSav
     }
   }, [aiPrompt, onQuestionsGenerated, showCustomSettings, customSubjectName, customTags])
 
-  const handleEditQuestion = useCallback((index: number) => {
-    const question = generatedQuestions[index]
-    setEditingQuestion(question)
-    setEditingIndex(index)
-    toast.success("Question loaded for editing")
-  }, [generatedQuestions])
 
-  const handleUpdateQuestion = useCallback((updatedQuestion: QuestionData) => {
-    if (editingIndex !== null) {
-      // Validate the updated question
-      const validationError = validateQuestion(updatedQuestion)
-      if (validationError) {
-        toast.error(validationError)
-        return
-      }
-      
-      setGeneratedQuestions(prev => prev.map((q, i) => i === editingIndex ? updatedQuestion : q))
-      setEditingIndex(null)
-      setEditingQuestion(null)
-      toast.success("Question updated successfully!")
-    }
-  }, [editingIndex, validateQuestion])
+
+
 
   const handleRemoveQuestion = useCallback((index: number) => {
     setGeneratedQuestions(prev => prev.filter((_, i) => i !== index))
@@ -421,8 +406,6 @@ function GenerateQuestionWithAI({ onQuestionsGenerated, onAddToManualList, isSav
       newAddedIds.add(questionId)
     })
     setAddedQuestionIds(newAddedIds)
-    
-    toast.success(`${questionsToAdd.length} questions added to manual list!`)
   }, [generatedQuestions, onAddToManualList, addedQuestionIds, generateQuestionId, validateQuestion])
 
   const handleAddSingleQuestion = useCallback((question: QuestionData, index: number) => {
@@ -441,7 +424,6 @@ function GenerateQuestionWithAI({ onQuestionsGenerated, onAddToManualList, isSav
 
     onAddToManualList([question]);
     setAddedQuestionIds(prev => new Set(prev).add(questionId));
-    toast.success("Question added to manual list!");
   }, [onAddToManualList, addedQuestionIds, generateQuestionId, validateQuestion]);
 
   const isQuestionAdded = useCallback((question: QuestionData, index: number) => {

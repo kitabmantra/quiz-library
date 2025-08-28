@@ -9,6 +9,7 @@ import { EntranceQuestionData } from "@/lib/types/quiz/quiz"
 import { extractQuestionsFromText } from "@/lib/actions/ai/extract-question"
 import { extractQuestionsFromImage } from "@/lib/actions/ai/extract-question-from-image"
 import { useUploadThing } from '@/lib/utils/uploadthing-client'
+import { removeMultipleImages } from '@/lib/actions/uploadthing/delete-images'
 
 interface GenerateEntranceQuestionWithAIProps {
   onQuestionsGenerated: (questions: EntranceQuestionData[]) => void
@@ -199,13 +200,17 @@ function GenerateEntranceQuestionWithAI({ onQuestionsGenerated, onAddToManualLis
         onQuestionsGenerated(processedQuestions)
         
         toast.success(`${processedQuestions.length} entrance questions generated from image successfully!`)
-    } catch (error) {
-      console.error(`Error extracting from image:`, error);
-      setError(`Failed to extract text from image. Please try again.`);
-      toast.error(`Failed to extract text from image. Please try again.`);
-    } finally {
-      setIsExtractingFromImage(false)
-    }
+      } catch (error) {
+        console.error(`Error extracting from image:`, error);
+        
+        setError(`Failed to extract text from image. Please try again.`);
+        toast.error(`Failed to extract text from image. Please try again.`);
+      } finally {
+        setIsExtractingFromImage(false)
+        if(uploadedImage && uploadedImage.length > 0){
+          await removeMultipleImages([uploadedImage])
+        }
+      }
   }, [selectedImageFile, imageGenerationPrompt, onQuestionsGenerated, showCustomSettings, customSubjectName, customTags, startUpload, convertToEntranceQuestion])
 
   const handleGenerateFromText = useCallback(async () => {
@@ -338,27 +343,9 @@ function GenerateEntranceQuestionWithAI({ onQuestionsGenerated, onAddToManualLis
     }
   }, [aiPrompt, onQuestionsGenerated, showCustomSettings, customSubjectName, customTags, convertToEntranceQuestion])
 
-  const handleEditQuestion = useCallback((index: number) => {
-    const question = generatedQuestions[index]
-    setEditingQuestion(question)
-    setEditingIndex(index)
-    toast.success("Question loaded for editing")
-  }, [generatedQuestions])
 
-  const handleUpdateQuestion = useCallback((updatedQuestion: EntranceQuestionData) => {
-    if (editingIndex !== null) {
-      const validationError = validateQuestion(updatedQuestion)
-      if (validationError) {
-        toast.error(validationError)
-        return
-      }
-      
-      setGeneratedQuestions(prev => prev.map((q, i) => i === editingIndex ? updatedQuestion : q))
-      setEditingIndex(null)
-      setEditingQuestion(null)
-      toast.success("Question updated successfully!")
-    }
-  }, [editingIndex, validateQuestion])
+
+ 
 
   const handleRemoveQuestion = useCallback((index: number) => {
     setGeneratedQuestions(prev => prev.filter((_, i) => i !== index))
@@ -420,8 +407,6 @@ function GenerateEntranceQuestionWithAI({ onQuestionsGenerated, onAddToManualLis
       newAddedIds.add(questionId)
     })
     setAddedQuestionIds(newAddedIds)
-    
-    toast.success(`${questionsToAdd.length} questions added to manual list!`)
   }, [generatedQuestions, onAddToManualList, addedQuestionIds, generateQuestionId, validateQuestion])
 
   const handleAddSingleQuestion = useCallback((question: EntranceQuestionData, index: number) => {
@@ -439,7 +424,6 @@ function GenerateEntranceQuestionWithAI({ onQuestionsGenerated, onAddToManualLis
 
     onAddToManualList([question]);
     setAddedQuestionIds(prev => new Set(prev).add(questionId));
-    toast.success("Question added to manual list!");
   }, [onAddToManualList, addedQuestionIds, generateQuestionId, validateQuestion]);
 
   const isQuestionAdded = useCallback((question: EntranceQuestionData, index: number) => {
