@@ -13,6 +13,7 @@ import { QuestionPreview } from "../../questions/QuestionPreview"
 import { QuestionList } from "../../questions/QuestionList"
 import { ManualQuestionList } from "../../questions/ManualQuestionList"
 import { ModeSelector } from "../../questions/ModeSelector"
+import GenerateEntranceQuestionWithAI from "./generate-entrance-question-with-ai"
 import { EntranceQuestionData, CreationMode } from "@/lib/types/quiz/quiz"
 import { CreateEntranceQuestionForBackend } from "@/lib/actions/quiz/entrance/question/post/create-entrance-question"
 import { useEntranceName } from "@/lib/hooks/params/useEntranceName"
@@ -35,8 +36,10 @@ export default function CreateEntranceQuestionPage() {
   const [manualQuestions, setManualQuestions] = useState<EntranceQuestionData[]>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
+
   const queryClient = useQueryClient()
 
+  
   const [questionData, setQuestionData] = useState<EntranceQuestionData>({
     question: "",
     options: ["", "", "", ""],
@@ -154,7 +157,33 @@ export default function CreateEntranceQuestionPage() {
     setQuestions((prev) => prev.filter((_, i) => i !== index))
   }, [])
 
-  const handleAddToManualList = useCallback((): void => {
+  const handleQuestionsGenerated = useCallback((generatedQuestions: EntranceQuestionData[]) => {
+    setQuestions(generatedQuestions)
+  }, [])
+
+  const handleAddToManualList = useCallback((questionsToAdd: EntranceQuestionData[] | EntranceQuestionData) => {
+    const questionsArray = Array.isArray(questionsToAdd) ? questionsToAdd : [questionsToAdd]
+    
+    // Validate each question before adding
+    const validQuestions = questionsArray.filter(question => {
+      const validationError = validateQuestion(question)
+      if (validationError) {
+        toast.error(`Question "${question.question.substring(0, 50)}..." - ${validationError}`)
+        return false
+      }
+      return true
+    })
+
+    if (validQuestions.length === 0) {
+      toast.error("No valid questions to add")
+      return
+    }
+
+    setManualQuestions((prev) => [...prev, ...validQuestions])
+    toast.success(`${validQuestions.length} questions added to manual list!`)
+  }, [validateQuestion])
+
+  const handleAddSingleToManualList = useCallback((): void => {
     const validationError = validateQuestion(questionData)
     if (validationError) {
       toast.error(validationError)
@@ -185,6 +214,17 @@ export default function CreateEntranceQuestionPage() {
       subjectName: questionData.subjectName, // Keep subject name for consistency
     })
   }, [validateQuestion, questionData, editingIndex])
+
+  const handleRemoveAllManualQuestions = useCallback(() => {
+    if (manualQuestions.length === 0) {
+      toast.error("No questions to remove")
+      return
+    }
+    
+    setManualQuestions([])
+    setEditingIndex(null)
+    toast.success("All questions removed from list")
+  }, [manualQuestions])
 
   const handleSaveAllManualQuestions = useCallback(async () => {
     if (manualQuestions.length === 0) {
@@ -290,23 +330,6 @@ export default function CreateEntranceQuestionPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {mode === "multiple" && (
           <div className="space-y-8">
-            {/* Image Upload for Multiple Mode */}
-            <Card className="bg-white shadow-lg border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="w-5 h-5 text-sky-600" />
-                  Image Upload & Generation
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ImageUpload
-                  onImagesUploaded={() => { }}
-                  onGenerateFromImages={handleGenerateFromImages}
-                  isGenerating={isGenerating}
-                  mode="multiple"
-                />
-              </CardContent>
-            </Card>
 
             {/* Generated Questions List */}
             {questions.length > 0 && (
@@ -330,13 +353,13 @@ export default function CreateEntranceQuestionPage() {
 
             {/* Manual Question Form and List for Multiple Mode */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <QuestionForm
-                questionData={convertToQuestionData(questionData)}
-                onQuestionChange={handleQuestionChange}
-                onAddToList={handleAddToManualList}
-                showAddToList={true}
-                isSaving={isCreating}
-              />
+                              <QuestionForm
+                  questionData={convertToQuestionData(questionData)}
+                  onQuestionChange={handleQuestionChange}
+                  onAddToList={handleAddSingleToManualList}
+                  showAddToList={true}
+                  isSaving={isCreating}
+                />
               <QuestionPreview questionData={convertToQuestionData(questionData)} />
             </div>
 
@@ -411,20 +434,41 @@ export default function CreateEntranceQuestionPage() {
         )}
 
         {mode === "import" && (
-          <Card className="bg-white shadow-lg border-0">
-            <CardContent className="text-center py-12">
-              <div className="mx-auto w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mb-6">
-                <Upload className="w-8 h-8 text-sky-600" />
+          <div className="space-y-8">
+            {/* AI Generation Component */}
+            <GenerateEntranceQuestionWithAI
+              onQuestionsGenerated={handleQuestionsGenerated}
+              onAddToManualList={handleAddToManualList}
+              isSaving={isCreating}
+              manualQuestionsCount={manualQuestions.length}
+            />
+
+            {/* Manual Question Form and List for Import Mode */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <QuestionForm
+                questionData={convertToQuestionData(questionData)}
+                onQuestionChange={handleQuestionChange}
+                onAddToList={handleAddSingleToManualList}
+                showAddToList={true}
+                isSaving={isCreating}
+              />
+              <QuestionPreview questionData={convertToQuestionData(questionData)} />
+            </div>
+
+            {/* Manual Question List for Import Mode */}
+            {manualQuestions.length > 0 && (
+              <div className="mt-8">
+                <ManualQuestionList
+                  questions={displayManualQuestions}
+                  onEditQuestion={handleEditManualQuestion}
+                  onRemoveQuestion={handleRemoveManualQuestion}
+                  onSaveAll={handleSaveAllManualQuestions}
+                  onRemoveAllQuestions={handleRemoveAllManualQuestions}
+                  isSaving={isCreating}
+                />
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-sky-800">Import Questions</h3>
-              <p className="text-sky-600 mb-6 max-w-md mx-auto">
-                Import functionality coming soon. Upload CSV, Excel, or JSON files to bulk import questions.
-              </p>
-              <Button variant="outline" disabled className="border-sky-300 text-sky-500">
-                Choose File to Import
-              </Button>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         )}
       </div>
     </div>

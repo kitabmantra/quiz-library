@@ -42,19 +42,7 @@ export function ModeSelector({ mode, onModeChange }: ModeSelectorProps) {
           <Upload className="w-5 h-5" />
           Import Questions
         </Button>
-        <Button
-          variant={mode === "ai" ? "default" : "outline"}
-          onClick={() => onModeChange("ai")}
-          size="lg"
-          className={`gap-3 px-6 py-3 transition-all duration-300 ${
-            mode === "ai" 
-              ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl" 
-              : "border-purple-300 hover:bg-purple-50 text-purple-700 hover:border-purple-400"
-          }`}
-        >
-          <Brain className="w-5 h-5" />
-          AI Generate
-        </Button>
+        
       </div>
     </div>
   )

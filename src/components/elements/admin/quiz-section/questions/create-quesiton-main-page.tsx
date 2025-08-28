@@ -13,6 +13,7 @@ import { QuestionPreview } from "./QuestionPreview"
 import { QuestionList } from "./QuestionList"
 import { ManualQuestionList } from "./ManualQuestionList"
 import { ModeSelector } from "./ModeSelector"
+import GenerateQuestionWithAI from "./generate-question-with-ai"
 import { QuestionData } from "@/lib/types/quiz/quiz"
 import { CreationMode } from "@/lib/types/quiz/quiz"
 import { CreateQuesitonForBackend, CreateQuestionRequestType } from "@/lib/actions/quiz/question/post/create-question"
@@ -34,8 +35,6 @@ export default function CreateQuestionPage() {
   const [mode, setMode] = useState<CreationMode>("multiple")
   const [isCreating, setIsCreating] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
-  const [aiPrompt, setAiPrompt] = useState("")
   const [questions, setQuestions] = useState<QuestionData[]>([])
   const [manualQuestions, setManualQuestions] = useState<QuestionData[]>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
@@ -101,60 +100,37 @@ export default function CreateQuestionPage() {
     }
   }, [questionData.subjectName])
 
-  const handleGenerateFromAI = useCallback(async () => {
-    if (!aiPrompt.trim()) {
-      toast.error("Please enter a prompt for AI generation")
-      return
-    }
-
-    setIsGeneratingAI(true)
-    try {
-      // TODO: Implement actual AI API call
-      console.log("Generating questions from AI prompt:", aiPrompt)
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 3000))
-
-      // Mock AI questions generation
-      const mockQuestions: QuestionData[] = [
-        {
-          question: `AI Generated Question 1 based on: "${aiPrompt}"`,
-          options: ["Option A", "Option B", "Option C", "Option D"],
-          correctAnswer: 0,
-          difficulty: "medium",
-          tags: ["ai-generated"],
-          priority: 3,
-          subjectName: questionData.subjectName || "General",
-          hint: "",
-          referenceUrl: "",
-        },
-        {
-          question: `AI Generated Question 2 based on: "${aiPrompt}"`,
-          options: ["Option A", "Option B", "Option C", "Option D"],
-          correctAnswer: 1,
-          difficulty: "medium",
-          tags: ["ai-generated"],
-          priority: 3,
-          subjectName: questionData.subjectName || "General",
-          hint: "",
-          referenceUrl: "",
-        }
-      ]
-      setQuestions(mockQuestions)
-      toast.success(`${mockQuestions.length} questions generated from AI successfully!`)
-      setAiPrompt("") // Clear prompt after generation
-    } catch (error) {
-      toast.error(error as string|| "Failed to generate questions from AI")
-    } finally {
-      setIsGeneratingAI(false)
-    }
-  }, [aiPrompt, questionData.subjectName])
-
   const handleRemoveQuestion = useCallback((index: number) => {
     setQuestions((prev) => prev.filter((_, i) => i !== index))
   }, [])
 
-  const handleAddToManualList = useCallback((): void => {
+  const handleQuestionsGenerated = useCallback((generatedQuestions: QuestionData[]) => {
+    setQuestions(generatedQuestions)
+  }, [])
+
+  const handleAddToManualList = useCallback((questionsToAdd: QuestionData[] | QuestionData) => {
+    const questionsArray = Array.isArray(questionsToAdd) ? questionsToAdd : [questionsToAdd]
+    
+    // Validate each question before adding
+    const validQuestions = questionsArray.filter(question => {
+      const validationError = validateQuestion(question)
+      if (validationError) {
+        toast.error(`Question "${question.question.substring(0, 50)}..." - ${validationError}`)
+        return false
+      }
+      return true
+    })
+
+    if (validQuestions.length === 0) {
+      toast.error("No valid questions to add")
+      return
+    }
+
+    setManualQuestions((prev) => [...prev, ...validQuestions])
+    toast.success(`${validQuestions.length} questions added to manual list!`)
+  }, [validateQuestion])
+
+  const handleAddSingleToManualList = useCallback((): void => {
     const validationError = validateQuestion(questionData)
     if (validationError) {
       toast.error(validationError)
@@ -168,8 +144,7 @@ export default function CreateQuestionPage() {
       toast.success("Question updated in list!")
     } else {
       // Add new question
-      setManualQuestions((prev) => [...prev, { ...questionData }])
-      toast.success("Question added to list!")
+      handleAddToManualList(questionData)
     }
 
     // Reset form for next question
@@ -184,7 +159,7 @@ export default function CreateQuestionPage() {
       priority: 3,
       subjectName: questionData.subjectName, // Keep subject name for consistency
     })
-  }, [validateQuestion, questionData, editingIndex])
+  }, [validateQuestion, questionData, editingIndex, handleAddToManualList])
 
   const handleSaveAllManualQuestions = useCallback(async () => {
     if (manualQuestions.length === 0) {
@@ -245,6 +220,17 @@ export default function CreateQuestionPage() {
     toast.success("Question removed from list")
   }, [editingIndex])
 
+  const handleRemoveAllManualQuestions = useCallback(() => {
+    if (manualQuestions.length === 0) {
+      toast.error("No questions to remove")
+      return
+    }
+    
+    setManualQuestions([])
+    setEditingIndex(null)
+    toast.success("All questions removed from list")
+  }, [manualQuestions])
+
   const formatBreadcrumbText = useCallback((text: string) => {
     return text.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
   }, [])
@@ -291,23 +277,7 @@ export default function CreateQuestionPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {mode === "multiple" && (
           <div className="space-y-8">
-            {/* Image Upload for Multiple Mode */}
-            <Card className="bg-white shadow-lg border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Upload className="w-5 h-5 text-sky-600" />
-                  Image Upload & Generation
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ImageUpload
-                  onImagesUploaded={() => { }}
-                  onGenerateFromImages={handleGenerateFromImages}
-                  isGenerating={isGenerating}
-                  mode="multiple"
-                />
-              </CardContent>
-            </Card>
+            
 
             {/* Generated Questions List */}
             {questions.length > 0 && (
@@ -334,7 +304,7 @@ export default function CreateQuestionPage() {
               <QuestionForm
                 questionData={questionData}
                 onQuestionChange={handleQuestionChange}
-                onAddToList={handleAddToManualList}
+                onAddToList={handleAddSingleToManualList}
                 showAddToList={true}
                 isSaving={isCreating}
               />
@@ -349,6 +319,7 @@ export default function CreateQuestionPage() {
                   onEditQuestion={handleEditManualQuestion}
                   onRemoveQuestion={handleRemoveManualQuestion}
                   onSaveAll={handleSaveAllManualQuestions}
+                  onRemoveAllQuestions={handleRemoveAllManualQuestions}
                   isSaving={isCreating}
                 />
               </div>
@@ -356,76 +327,42 @@ export default function CreateQuestionPage() {
           </div>
         )}
 
-        {mode === "ai" && (
+        {mode === "import" && (
           <div className="space-y-8">
-            {/* AI Generation Form */}
-            <Card className="bg-white shadow-lg border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
-                  AI Question Generation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block text-sky-700">
-                    Describe what kind of questions you want to generate:
-                  </label>
-                  <Textarea
-                    placeholder="e.g., Generate 5 multiple choice questions about JavaScript fundamentals, covering variables, functions, and arrays..."
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    rows={4}
-                    className="resize-none border-sky-200 focus:border-sky-500 focus:ring-sky-500"
-                  />
-                </div>
-                <Button
-                  onClick={handleGenerateFromAI}
-                  disabled={isGeneratingAI || !aiPrompt.trim()}
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isGeneratingAI ? "Generating Questions..." : "Generate Questions with AI"}
-                </Button>
-              </CardContent>
-            </Card>
+            {/* AI Generation Component */}
+            <GenerateQuestionWithAI
+              onQuestionsGenerated={handleQuestionsGenerated}
+              onAddToManualList={handleAddToManualList}
+              isSaving={isCreating}
+              manualQuestionsCount={manualQuestions.length}
+            />
 
-            {/* Generated Questions List */}
-            {questions.length > 0 && (
-              <Card className="bg-white shadow-lg border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-sky-600" />
-                    Generated Questions ({questions.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <QuestionList
-                    questions={questions}
-                    onSaveQuestion={handleSaveAllManualQuestions}
-                    onRemoveQuestion={handleRemoveQuestion}
-                    isSaving={isCreating}
-                  />
-                </CardContent>
-              </Card>
+            {/* Manual Question Form and List for Import Mode */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <QuestionForm
+                questionData={questionData}
+                onQuestionChange={handleQuestionChange}
+                onAddToList={handleAddSingleToManualList}
+                showAddToList={true}
+                isSaving={isCreating}
+              />
+              <QuestionPreview questionData={questionData} />
+            </div>
+
+            {/* Manual Question List for Import Mode */}
+            {manualQuestions.length > 0 && (
+              <div className="mt-8">
+                <ManualQuestionList
+                  questions={manualQuestions}
+                  onEditQuestion={handleEditManualQuestion}
+                  onRemoveQuestion={handleRemoveManualQuestion}
+                  onSaveAll={handleSaveAllManualQuestions}
+                  onRemoveAllQuestions={handleRemoveAllManualQuestions}
+                  isSaving={isCreating}
+                />
+              </div>
             )}
           </div>
-        )}
-
-        {mode === "import" && (
-          <Card className="bg-white shadow-lg border-0">
-            <CardContent className="text-center py-12">
-              <div className="mx-auto w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mb-6">
-                <Upload className="w-8 h-8 text-sky-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-sky-800">Import Questions</h3>
-              <p className="text-sky-600 mb-6 max-w-md mx-auto">
-                Import functionality coming soon. Upload CSV, Excel, or JSON files to bulk import questions.
-              </p>
-              <Button variant="outline" disabled className="border-sky-300 text-sky-500">
-                Choose File to Import
-              </Button>
-            </CardContent>
-          </Card>
         )}
       </div>
     </div>
