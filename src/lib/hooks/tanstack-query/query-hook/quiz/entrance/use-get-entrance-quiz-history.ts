@@ -18,7 +18,7 @@ export const fetchEntranceQuizHistory = async () => {
 export const useGetEntranceQuizHistory = () => {
 
     return useQuery({
-        queryKey: ["get-user-past-history"],
+        queryKey: ["get-user-past-entrance-quiz-history"],
         queryFn: () => fetchEntranceQuizHistory(),
         refetchOnWindowFocus: false,
         staleTime: 10 * 60 * 1000,

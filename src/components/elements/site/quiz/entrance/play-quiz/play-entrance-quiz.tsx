@@ -83,7 +83,8 @@ function PlayEntranceQuiz() {
     entrance: null,
     subjects: [],
     difficulty: null,
-    questionCount: 0
+    questionCount: 0,
+    timerEnabled: true
   })
   const [isStoreHydrated, setIsStoreHydrated] = useState(false)
   const [isResuming, setIsResuming] = useState(false)
@@ -235,10 +236,10 @@ function PlayEntranceQuiz() {
 
   useEffect(() => {
     if (questions.length > 0 && isStoreHydrated) {
-      initializeQuiz(questions)
+      initializeQuiz(questions, filter.timerEnabled)
       setIsLoading(false)
     }
-  }, [questions, initializeQuiz, isStoreHydrated, isResuming])
+  }, [questions, initializeQuiz, isStoreHydrated, isResuming, filter.timerEnabled])
 
   console.log("this is the questions", questions)
 
@@ -253,15 +254,16 @@ function PlayEntranceQuiz() {
       const currentState = useQuizStore.getState()
 
       if (currentState.progress && currentState.progress.answers.length > 0 && !currentState.progress.isCompleted) {
-        if (!currentState.isQuizStarted) {
-          startQuiz()
-        }
+        // Don't auto-start quiz - let user click Start Quiz button
+        console.log('Entrance quiz in progress detected, waiting for user to click Start Quiz')
       } else if (currentState.progress && currentState.progress.isCompleted) {
         // The results will be shown automatically
       } else {
+        // New quiz - waiting for user to click Start Quiz
+        console.log('New entrance quiz ready, waiting for user to click Start Quiz')
       }
     }
-  }, [isLoading, questions.length, startQuiz])
+  }, [isLoading, questions.length])
 
   useEffect(() => {
     const hydrationTimer = setTimeout(() => {
@@ -488,7 +490,8 @@ function PlayEntranceQuiz() {
       entrance: null,
       subjects: [],
       difficulty: null,
-      questionCount: 0
+      questionCount: 0,
+      timerEnabled: true
     })
     setFetchQuestion(false)
     setIsLoading(false)
@@ -504,7 +507,8 @@ function PlayEntranceQuiz() {
       entrance: null,
       subjects: [],
       difficulty: null,
-      questionCount: 0
+      questionCount: 0,
+      timerEnabled: true
     })
     setFetchQuestion(false)
     setIsLoading(false)
@@ -566,7 +570,8 @@ function PlayEntranceQuiz() {
       entrance: null,
       subjects: [],
       difficulty: null,
-      questionCount: 0
+      questionCount: 0,
+      timerEnabled: true
     })
     setFetchQuestion(false)
     setIsLoading(false)
@@ -873,6 +878,7 @@ function PlayEntranceQuiz() {
             timeRemaining={timeRemaining}
             totalTime={useQuizStore.getState().getTimeLimit(currentQuestion.difficulty)}
             difficulty={currentQuestion.difficulty}
+            isTimerEnabled={filter.timerEnabled}
           />
 
           <QuizProgress

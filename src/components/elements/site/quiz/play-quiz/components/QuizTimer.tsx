@@ -1,13 +1,14 @@
 import React from 'react'
-import { Clock, Zap, AlertTriangle } from 'lucide-react'
+import { Clock, Zap, AlertTriangle, Pause } from 'lucide-react'
 
 interface QuizTimerProps {
   timeRemaining: number
   totalTime: number
   difficulty: string
+  isTimerEnabled?: boolean
 }
 
-export const QuizTimer: React.FC<QuizTimerProps> = ({ timeRemaining, totalTime, difficulty }) => {
+export const QuizTimer: React.FC<QuizTimerProps> = ({ timeRemaining, totalTime, difficulty, isTimerEnabled = true }) => {
   const getTimeColor = () => {
     const percentage = (timeRemaining / totalTime) * 100
     if (percentage <= 25) return 'text-red-500'
@@ -41,6 +42,45 @@ export const QuizTimer: React.FC<QuizTimerProps> = ({ timeRemaining, totalTime, 
   }
 
   const isUrgent = timeRemaining <= totalTime * 0.25
+
+  // If timer is disabled, show a different UI
+  if (!isTimerEnabled) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg border-0 p-4">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-100">
+              <Pause className="w-6 h-6 text-gray-500" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-500">
+                ∞
+              </div>
+              <div className="text-xs text-gray-500">no time limit</div>
+            </div>
+          </div>
+          
+          <div className="flex-1">
+            <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div
+                className="h-3 rounded-full bg-gradient-to-r from-gray-400 to-gray-500"
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Untimed</span>
+              <span>Quiz</span>
+            </div>
+          </div>
+          
+          <div className={`px-4 py-2 rounded-full text-sm font-semibold border ${getDifficultyColor()} flex items-center gap-2`}>
+            {getDifficultyIcon()}
+            {difficulty}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg border-0 p-4">

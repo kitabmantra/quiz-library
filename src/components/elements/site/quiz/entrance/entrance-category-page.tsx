@@ -14,12 +14,14 @@ import {
   ChevronRight,
   ChevronDown,
   GraduationCap,
+  Clock,
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { useGetEntranceQuizHistory } from "@/lib/hooks/tanstack-query/query-hook/quiz/entrance/use-get-entrance-quiz-history"
+import { Switch } from "@/components/ui/switch"
 
 // Type definitions for entrance data
 interface EntranceQuestionData {
@@ -33,7 +35,8 @@ export interface ActiveFilters{
   entrance: string | null, 
   subjects: string[], 
   difficulty: string | null,
-  questionCount: number 
+  questionCount: number,
+  timerEnabled: boolean
 }
 
 interface EntranceData {
@@ -47,6 +50,7 @@ function EntranceCategoryPage() {
   const [selectedNumber, setSelectedNumber] = useState(10)
   const [questionCountSelected, setQuestionCountSelected] = useState(true)
   const [isStartingQuiz, setIsStartingQuiz] = useState(false) // Add loading state
+  const [isTimerEnabled, setIsTimerEnabled] = useState(true)
   const { data: entranceQuizHistory, isLoading: isLoadingEntranceQuizHistory, isError: isErrorEntranceQuizHistory } = useGetEntranceQuizHistory()
   console.log("this is the entrance quiz history: ", entranceQuizHistory)
   const router = useRouter()
@@ -54,7 +58,8 @@ function EntranceCategoryPage() {
     entrance: null, 
     subjects: [], 
     difficulty: "all", // Changed from null to "all"
-    questionCount: 10 
+    questionCount: 10,
+    timerEnabled: true
   })
 
   const entranceData = data?.data as EntranceData
@@ -147,10 +152,11 @@ function EntranceCategoryPage() {
 
   const clearFilters = () => {
     setActiveFilters({
-      entrance: null, subjects: [], difficulty: "all", questionCount: 10, // Changed from null to "all"
+      entrance: null, subjects: [], difficulty: "all", questionCount: 10, timerEnabled: true
     })
     setSelectedNumber(10)
     setQuestionCountSelected(true)
+    setIsTimerEnabled(true)
     setExpandedEntrances(new Set())
   }
 
@@ -319,7 +325,7 @@ function EntranceCategoryPage() {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-gray-900">Quiz Configuration</h3>
-                {(questionCountSelected || activeFilters.entrance || activeFilters.subjects.length > 0 || activeFilters.difficulty) && (
+                {(questionCountSelected || activeFilters.entrance || activeFilters.subjects.length > 0 || activeFilters.difficulty || !isTimerEnabled) && (
                   <button
                     onClick={clearFilters}
                     className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
@@ -371,11 +377,45 @@ function EntranceCategoryPage() {
                 </div>
               </div>
 
+              {/* Timer Configuration */}
+              <div className="mb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold bg-purple-500 text-white`}>
+                    2
+                  </div>
+                  <label className="text-base font-semibold text-gray-900">Timer Settings</label>
+                </div>
+                <div className="ml-9">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Enable Timer</p>
+                        <p className="text-xs text-gray-500">
+                          {isTimerEnabled ? "Quiz will have time limits" : "Quiz will be untimed"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={isTimerEnabled}
+                      onCheckedChange={(checked: boolean) => {
+                        setIsTimerEnabled(checked)
+                        setActiveFilters(prev => ({ ...prev, timerEnabled: checked }))
+                      }}
+                      className="data-[state=checked]:bg-purple-600"
+                    />
+                  </div>
+                  <span className="text-sm text-purple-600 font-medium mt-1 block">
+                    ✓ Timer {isTimerEnabled ? 'enabled' : 'disabled'}
+                  </span>
+                </div>
+              </div>
+
               {/* Filter Selection */}
               <div className="mb-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${activeFilters.entrance ? 'bg-purple-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
-                    2
+                    3
                   </div>
                   <label className="text-base font-semibold text-gray-900">Select Filters</label>
                 </div>
@@ -409,7 +449,7 @@ function EntranceCategoryPage() {
               </div>
 
               {/* Selected Filters Display */}
-              {(activeFilters.entrance || activeFilters.subjects.length > 0 || activeFilters.difficulty) && (
+              {(activeFilters.entrance || activeFilters.subjects.length > 0 || activeFilters.difficulty || !isTimerEnabled) && (
                 <div className="mb-4">
                   <h4 className="text-sm font-semibold text-gray-900 mb-2">Selected Filters:</h4>
                   <div className="space-y-1.5">
@@ -436,6 +476,12 @@ function EntranceCategoryPage() {
                     {activeFilters.difficulty && activeFilters.difficulty !== "all" && (
                       <div className="bg-purple-50 border border-purple-200 text-purple-800 px-3 py-2 rounded-lg text-sm font-medium">
                         Difficulty: {activeFilters.difficulty.charAt(0).toUpperCase() + activeFilters.difficulty.slice(1)}
+                      </div>
+                    )}
+
+                    {!isTimerEnabled && (
+                      <div className="bg-orange-50 border border-orange-200 text-orange-800 px-3 py-2 rounded-lg text-sm font-medium">
+                        ⏱️ Timer: Disabled (Untimed Quiz)
                       </div>
                     )}
                   </div>
@@ -486,6 +532,15 @@ function EntranceCategoryPage() {
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-1 text-sm">Select Entrance</h4>
                     <p className="text-sm text-gray-600">Choose your entrance exam type</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
+                    <Clock className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Timer Settings</h4>
+                    <p className="text-sm text-gray-600">Choose whether to enable or disable the quiz timer</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

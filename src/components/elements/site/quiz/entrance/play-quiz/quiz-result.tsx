@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { quizStorage } from '@/lib/utils/quiz-storage'
 import { useQuizStore } from '@/lib/store/useQuizStore'
 import { createUserEntranceQuizHistory } from '@/lib/actions/quiz/history/post/create-user-entrance-quiz-history'
+import { useQueryClient } from '@tanstack/react-query'
 
 
 interface QuizResultsProps {
@@ -30,6 +31,7 @@ export const QuizResults: React.FC<QuizResultsProps> = ({
   onNewQuiz,
 }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   // Debug: Log the props
   console.log('QuizResults Props:', { questions, answers, score, totalTime });
   console.log('Answers array:', answers);
@@ -209,7 +211,7 @@ export const QuizResults: React.FC<QuizResultsProps> = ({
       const res = await createUserEntranceQuizHistory(quizResults)
       if(res.success ){
         toast.success('Quiz results saved successfully!')
-        
+        queryClient.invalidateQueries({ queryKey: ['get-user-past-entrance-quiz-history'] })
         // Clear all quiz-related data
         quizStorage.clearAllQuizData();
         localStorage.removeItem('quiz_results');

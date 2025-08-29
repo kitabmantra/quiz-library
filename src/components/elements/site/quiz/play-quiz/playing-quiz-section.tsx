@@ -36,6 +36,7 @@ function PlayingQuizSection() {
     year: "",
     subjects: [],
     questionCount: 0,
+    timerEnabled: true,
   });
   const [isStoreHydrated, setIsStoreHydrated] = useState(false);
   const [isResuming, setIsResuming] = useState(false);
@@ -185,31 +186,32 @@ function PlayingQuizSection() {
 
   useEffect(() => {
     if (questions.length > 0 && isStoreHydrated) {
-      initializeQuiz(questions);
+      initializeQuiz(questions, filter.timerEnabled);
       setIsLoading(false);
     }
-  }, [questions, initializeQuiz, isStoreHydrated, isResuming]);
+  }, [questions, initializeQuiz, isStoreHydrated, isResuming, filter.timerEnabled]);
 
   useEffect(() => {
     if (!isLoading && questions.length > 0) {
-      const wasRecentlyCleared = sessionStorage.getItem("quiz_recently_cleared");
+      const wasRecentlyCleared = sessionStorage.getItem("quiz_recently_cleared")
       
       if (wasRecentlyCleared) {
-        return;
+        return
       }
       
-      const currentState = useQuizStore.getState();
+      const currentState = useQuizStore.getState()
 
       if (currentState.progress && currentState.progress.answers.length > 0 && !currentState.progress.isCompleted) {
-        if (!currentState.isQuizStarted) {
-          startQuiz();
-        }
+        // Don't auto-start quiz - let user click Start Quiz button
+        console.log('Quiz in progress detected, waiting for user to click Start Quiz')
       } else if (currentState.progress && currentState.progress.isCompleted) {
         // The results will be shown automatically
       } else {
+        // New quiz - waiting for user to click Start Quiz
+        console.log('New quiz ready, waiting for user to click Start Quiz')
       }
     }
-  }, [isLoading, questions.length, startQuiz]);
+  }, [isLoading, questions.length]);
 
   useEffect(() => {
     const hydrationTimer = setTimeout(() => {
@@ -441,6 +443,7 @@ function PlayingQuizSection() {
       year: "",
       subjects: [],
       questionCount: 0,
+      timerEnabled: true,
     });
     setFetchQuestion(false);
     setIsLoading(false);
@@ -457,6 +460,7 @@ function PlayingQuizSection() {
       year: "",
       subjects: [],
       questionCount: 0,
+      timerEnabled: true,
     });
     setFetchQuestion(false);
     setIsLoading(false);
@@ -519,6 +523,7 @@ function PlayingQuizSection() {
       year: "",
       subjects: [],
       questionCount: 0,
+      timerEnabled: true,
     });
     setFetchQuestion(false);
     setIsLoading(false);
@@ -824,6 +829,7 @@ function PlayingQuizSection() {
             timeRemaining={timeRemaining}
             totalTime={useQuizStore.getState().getTimeLimit(currentQuestion.difficulty)}
             difficulty={currentQuestion.difficulty}
+            isTimerEnabled={filter.timerEnabled}
           />
 
           <QuizProgress

@@ -17,6 +17,7 @@ export type Filter = {
   year: string | null
   subjects: string[] ,
   questionCount: number
+  timerEnabled: boolean
 }
 
 export interface QuestionData {

@@ -35,12 +35,13 @@ export interface QuizState {
   timeRemaining: number
   isTimerRunning: boolean
   timerInterval: NodeJS.Timeout | null
+  timerEnabled: boolean
   
   isQuizStarted: boolean
   isQuizCompleted: boolean
   showResults: boolean
   
-  initializeQuiz: (questions: QuizQuestion[]) => void
+  initializeQuiz: (questions: QuizQuestion[], timerEnabled?: boolean) => void
   startQuiz: () => void
   answerQuestion: (answer: string) => void
   nextQuestion: () => void
@@ -55,6 +56,7 @@ export interface QuizState {
   getQuestionById: (questionId: string) => QuizQuestion | null
   calculateScore: () => void
   cleanup: () => void
+  setTimerEnabled: (enabled: boolean) => void
 }
 
 export const useQuizStore = create<QuizState>()(
@@ -66,20 +68,25 @@ export const useQuizStore = create<QuizState>()(
       timeRemaining: 0,
       isTimerRunning: false,
       timerInterval: null,
+      timerEnabled: true,
       isQuizStarted: false,
       isQuizCompleted: false,
       showResults: false,
 
-      initializeQuiz: (questions: QuizQuestion[]) => {
+      initializeQuiz: (questions: QuizQuestion[], timerEnabled: boolean = true) => {
         const existingProgress = get().progress;
         const existingQuestions = get().questions;
         get().stopTimer();
+        
+        // Set timer enabled state
+        set({ timerEnabled });
+        
         if (existingProgress && existingQuestions.length === questions.length) {
           const currentIndex = existingProgress.currentQuestionIndex;
           const currentQuestion = questions[currentIndex] || questions[0];
           
           let remainingTime = get().getTimeLimit(currentQuestion.difficulty);
-          if (existingProgress.currentQuestionStartTime) {
+          if (existingProgress.currentQuestionStartTime && timerEnabled) {
             const timeSinceQuestionStart = Math.floor((Date.now() - existingProgress.currentQuestionStartTime) / 1000);
             remainingTime = Math.max(0, get().getTimeLimit(currentQuestion.difficulty) - timeSinceQuestionStart);
           }
@@ -98,8 +105,9 @@ export const useQuizStore = create<QuizState>()(
             timerInterval: null,   
           })
           
-          if (existingProgress.answers.length > 0 && !existingProgress.isCompleted && remainingTime > 0) {
-          } else if (remainingTime <= 0) {
+          if (existingProgress.answers.length > 0 && !existingProgress.isCompleted && (remainingTime > 0 || !timerEnabled)) {
+            // Don't auto-start timer here - let user click Start Quiz
+          } else if (remainingTime <= 0 && timerEnabled) {
             console.log('Time has run out during resume - marking as timeout');
             if (currentQuestion && existingProgress) {
               const timeoutAnswer: QuizAnswer = {
@@ -141,7 +149,7 @@ export const useQuizStore = create<QuizState>()(
             questions,
             currentQuestion: questions[0] || null,
             progress,
-            timeRemaining: get().getTimeLimit(questions[0]?.difficulty || 'medium'),
+            timeRemaining: timerEnabled ? get().getTimeLimit(questions[0]?.difficulty || 'medium') : 0,
             isQuizStarted: false,
             isQuizCompleted: false,
             showResults: false,
@@ -152,7 +160,7 @@ export const useQuizStore = create<QuizState>()(
       },
 
       startQuiz: () => {
-        const { progress, isTimerRunning } = get()
+        const { progress, isTimerRunning, timerEnabled } = get()
         
         if (isTimerRunning) {
           console.log('Quiz already started and timer running, skipping startQuiz call')
@@ -171,7 +179,10 @@ export const useQuizStore = create<QuizState>()(
           set({ isQuizStarted: true })
         }
         
-        get().startTimer()
+        // Only start timer if it's enabled AND user explicitly clicked Start Quiz
+        if (timerEnabled) {
+          get().startTimer()
+        }
       },
 
       answerQuestion: (answer: string) => {
@@ -229,11 +240,15 @@ export const useQuizStore = create<QuizState>()(
         set({
           currentQuestion: nextQuestion,
           progress: newProgress,
-          timeRemaining: get().getTimeLimit(nextQuestion.difficulty),
+          timeRemaining: get().timerEnabled ? get().getTimeLimit(nextQuestion.difficulty) : 0,
         })
 
         console.log(`Moved to question ${nextIndex + 1}, starting timer with ${get().getTimeLimit(nextQuestion.difficulty)}s`)
-        get().startTimer()
+        
+        // Only start timer if it's enabled
+        if (get().timerEnabled) {
+          get().startTimer()
+        }
       },
 
 
@@ -301,7 +316,13 @@ export const useQuizStore = create<QuizState>()(
       
 
       startTimer: () => {
-        const { timerInterval, isTimerRunning } = get()
+        const { timerInterval, isTimerRunning, timerEnabled } = get()
+        
+        // Don't start timer if it's disabled
+        if (!timerEnabled) {
+          console.log('Timer is disabled, not starting timer')
+          return
+        }
         
         if (isTimerRunning || timerInterval) {
           console.log('Timer already running, stopping existing timer first')
@@ -333,7 +354,12 @@ export const useQuizStore = create<QuizState>()(
       },
 
       updateTimer: () => {
-        const { timeRemaining, currentQuestion, progress, isTimerRunning, timerInterval } = get()
+        const { timeRemaining, currentQuestion, progress, isTimerRunning, timerInterval, timerEnabled } = get()
+        
+        // Don't update timer if it's disabled
+        if (!timerEnabled) {
+          return
+        }
         
         if (!isTimerRunning || !timerInterval) {
           console.log('Timer update called but timer not running, stopping')
@@ -424,6 +450,13 @@ export const useQuizStore = create<QuizState>()(
           progress: null,
         });
         console.log('Quiz store cleanup complete.');
+      },
+
+      setTimerEnabled: (enabled: boolean) => {
+        set({ timerEnabled: enabled })
+        if (!enabled) {
+          get().stopTimer()
+        }
       },
 
 

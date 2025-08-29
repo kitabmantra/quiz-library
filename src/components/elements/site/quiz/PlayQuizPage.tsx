@@ -15,6 +15,7 @@ import {
   X,
   Play,
   Trophy,
+  Clock,
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,8 @@ import { AcademicCategories, CountQuestionItem } from "@/lib/types/quiz/quiz"
 import { useRouter } from "next/navigation"
 import { quizStorage } from "@/lib/utils/quiz-storage"
 import { useGetUserPastHistory } from "@/lib/hooks/tanstack-query/query-hook/quiz/quiz-history/use-get-user-past-history"
+import { Switch } from "@/components/ui/switch"
+
 function PlayQuizPage() {
   const { data, isLoading, error } = useGetAllAcademicCat()
   const { data: pastHistory, isLoading: pastHistoryLoading, error: pastHistoryError } = useGetUserPastHistory()
@@ -30,10 +33,12 @@ function PlayQuizPage() {
   const [expandedFaculties, setExpandedFaculties] = useState<Set<string>>(new Set())
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set())
   const [selectedNumber, setSelectedNumber] = useState(10)
+  const [isTimerEnabled, setIsTimerEnabled] = useState(true)
 
   const router = useRouter()
-  const [activeFilters, setActiveFilters] = useState<{ level: string | null, faculty: string | null, year: string | null, subjects: string[], questionCount: number }>({ level: null, faculty: null, year: null, subjects: [], questionCount: 10 })
+  const [activeFilters, setActiveFilters] = useState<{ level: string | null, faculty: string | null, year: string | null, subjects: string[], questionCount: number, timerEnabled: boolean }>({ level: null, faculty: null, year: null, subjects: [], questionCount: 10, timerEnabled: true })
   const [questionCountSelected, setQuestionCountSelected] = useState(true)
+  const [timerSelected, setTimerSelected] = useState(true)
   const academicData = data?.data as AcademicCategories
   const countData: CountQuestionItem[] = Array.isArray(academicData?.countQuestionData) ? (academicData?.countQuestionData as CountQuestionItem[]) : []
 
@@ -281,10 +286,12 @@ function PlayQuizPage() {
 
   const clearFilters = () => {
     setActiveFilters({
-      level: null, faculty: null, year: null, subjects: [], questionCount: 10,
+      level: null, faculty: null, year: null, subjects: [], questionCount: 10, timerEnabled: true,
     })
     setSelectedNumber(10)
     setQuestionCountSelected(true)
+    setIsTimerEnabled(true)
+    setTimerSelected(true)
     setExpandedLevels(new Set())
     setExpandedFaculties(new Set())
     setExpandedYears(new Set())
@@ -313,7 +320,8 @@ function PlayQuizPage() {
         if (quizData.filter.level === activeFilters.level &&
           quizData.filter.faculty === activeFilters.faculty &&
           quizData.filter.year === activeFilters.year &&
-          quizData.filter.subjects.length === activeFilters.subjects.length) {
+          quizData.filter.subjects.length === activeFilters.subjects.length &&
+          quizData.filter.timerEnabled === activeFilters.timerEnabled) {
           router.push("/quizzes/academic/category-selection/play-quiz");
           return;
         }
@@ -415,7 +423,7 @@ function PlayQuizPage() {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-gray-900">Quiz Configuration</h3>
-                {(questionCountSelected || activeFilters.level || activeFilters.faculty || activeFilters.year || activeFilters.subjects.length > 0) && (
+                {(questionCountSelected || activeFilters.level || activeFilters.faculty || activeFilters.year || activeFilters.subjects.length > 0 || !isTimerEnabled) && (
                   <button
                     onClick={clearFilters}
                     className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
@@ -467,11 +475,46 @@ function PlayQuizPage() {
                 </div>
               </div>
 
+              {/* Timer Configuration */}
+              <div className="mb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${timerSelected ? 'bg-purple-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
+                    2
+                  </div>
+                  <label className="text-base font-semibold text-gray-900">Timer Settings</label>
+                </div>
+                <div className="ml-9">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Enable Timer</p>
+                        <p className="text-xs text-gray-500">
+                          {isTimerEnabled ? "Quiz will have time limits" : "Quiz will be untimed"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={isTimerEnabled}
+                      onCheckedChange={(checked: boolean) => {
+                        setIsTimerEnabled(checked)
+                        setActiveFilters(prev => ({ ...prev, timerEnabled: checked }))
+                        setTimerSelected(true)
+                      }}
+                      className="data-[state=checked]:bg-purple-600"
+                    />
+                  </div>
+                  <span className="text-sm text-purple-600 font-medium mt-1 block">
+                    ✓ Timer {isTimerEnabled ? 'enabled' : 'disabled'}
+                  </span>
+                </div>
+              </div>
+
               {/* Filter Selection */}
               <div className="mb-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${activeFilters.level ? 'bg-purple-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
-                    2
+                    3
                   </div>
                   <label className="text-base font-semibold text-gray-900">Select Filters</label>
                 </div>
@@ -486,7 +529,7 @@ function PlayQuizPage() {
               </div>
 
               {/* Selected Filters Display */}
-              {(activeFilters.level || activeFilters.faculty || activeFilters.year || activeFilters.subjects.length > 0) && (
+              {(activeFilters.level || activeFilters.faculty || activeFilters.year || activeFilters.subjects.length > 0 || !isTimerEnabled) && (
                 <div className="mb-4">
                   <h4 className="text-sm font-semibold text-gray-900 mb-2">Selected Filters:</h4>
                   <div className="space-y-1.5">
@@ -519,6 +562,11 @@ function PlayQuizPage() {
                     {activeFilters.subjects.length > 3 && (
                       <div className="px-3 py-2 rounded-lg text-sm bg-orange-50 border border-orange-200 text-orange-800">
                         +{activeFilters.subjects.length - 3} more subjects
+                      </div>
+                    )}
+                    {!isTimerEnabled && (
+                      <div className="bg-orange-50 border border-orange-200 text-orange-800 px-3 py-2 rounded-lg text-sm font-medium">
+                        ⏱️ Timer: Disabled (Untimed Quiz)
                       </div>
                     )}
                   </div>
@@ -564,6 +612,15 @@ function PlayQuizPage() {
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-1 text-sm">Select Level</h4>
                     <p className="text-sm text-gray-600">Click on any level to explore its faculties</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mt-0.5">
+                    <Clock className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Timer Settings</h4>
+                    <p className="text-sm text-gray-600">Choose whether to enable or disable the quiz timer</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

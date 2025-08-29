@@ -26,7 +26,13 @@ export async function GET(request: Request) {
         })
         const data = res.data;
         if (!data.success) throw new Error(data.error)
-        console.log('this is the entrance quiz history data : ',data)
+        if(data.success && data.data.correctQuestions === null){
+          data.data.correctQuestions = []
+        }
+        if(data.success && data.data.wrongQuestions === null){
+          data.data.wrongQuestions = []
+        }
+        console.log('this is the entrance quiz history data : ',data.data)
         return NextResponse.json({ questions: data.data, success: data.success }, { status: 200 })
 
     } catch (error) {

@@ -25,19 +25,28 @@ import { useGetEntranceQuizHistory } from '@/lib/hooks/tanstack-query/query-hook
 import { useRouter } from "next/navigation"
 
 // Types based on the backend structure
-interface UserQuizQuestionType {
-  questionId: string
-  userAnswer: string
+interface QuestionResponseToClientForQuizFromPastHistory {
+  id: string
+  question: string
+  options: string[]
+  correctAnswer: string
+  difficulty: string
+  hint?: string
+  tags: string[]
+  subjectName: string
+  referenceUrl?: string
+  priority: number
   isCorrect: boolean
   isTimeOut: boolean
   timeSpent: number
+  userAnswer: string
 }
 
-interface UserQuizQuestionHistory {
+interface UserQuizResultHistory {
   id: string
   userId: string
-  correctQuestions: UserQuizQuestionType[]
-  wrongQuestions: UserQuizQuestionType[]
+  correctQuestions: QuestionResponseToClientForQuizFromPastHistory[]
+  wrongQuestions: QuestionResponseToClientForQuizFromPastHistory[]
   createdAt: string
   updatedAt: string
 }
@@ -45,8 +54,9 @@ interface UserQuizQuestionHistory {
 function EntranceQuizUserHistory() {
   const { data: entranceQuizHistory, isLoading, error } = useGetEntranceQuizHistory()
   const router = useRouter()
-  const [selectedHistory, setSelectedHistory] = useState<UserQuizQuestionHistory | null>(null)
+  const [selectedHistory, setSelectedHistory] = useState<UserQuizResultHistory | null>(null)
   const [showHistoryDetail, setShowHistoryDetail] = useState(false)
+  const [selectedFilter, setSelectedFilter] = useState('all')
 
   console.log("this is the entrance quiz history: ", entranceQuizHistory)
 
@@ -89,7 +99,7 @@ function EntranceQuizUserHistory() {
     return "Keep practicing! You can do better!"
   }
 
-  const calculateHistoryStats = (history: UserQuizQuestionHistory) => {
+  const calculateHistoryStats = (history: UserQuizResultHistory) => {
     const correctQuestions = Array.isArray(history.correctQuestions) ? history.correctQuestions : []
     const wrongQuestions = Array.isArray(history.wrongQuestions) ? history.wrongQuestions : []
 
@@ -187,7 +197,7 @@ function EntranceQuizUserHistory() {
     )
   }
 
-  const handleViewHistory = (history: UserQuizQuestionHistory) => {
+  const handleViewHistory = (history: UserQuizResultHistory) => {
     setSelectedHistory(history)
     setShowHistoryDetail(true)
   }
@@ -225,7 +235,7 @@ function EntranceQuizUserHistory() {
   }
 
   const historyData = entranceQuizHistory?.questions
-  const validHistoryData: UserQuizQuestionHistory[] = historyData && typeof historyData === "object" && "id" in historyData ? [historyData as UserQuizQuestionHistory] : []
+  const validHistoryData: UserQuizResultHistory[] = historyData && typeof historyData === "object" && "id" in historyData ? [historyData as UserQuizResultHistory] : []
 
   if (showHistoryDetail && selectedHistory) {
     const stats = calculateHistoryStats(selectedHistory)
@@ -315,32 +325,6 @@ function EntranceQuizUserHistory() {
             </div>
 
             <div className="lg:col-span-3 space-y-8">
-              {/* Quiz Summary */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                  <BarChart3 className="h-6 w-6 mr-3 text-purple-600" />
-                  Quiz Summary
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div className="text-center p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
-                    <div className="text-3xl font-bold text-slate-900 mb-2">{stats.totalQuestions}</div>
-                    <div className="text-sm text-slate-600 font-medium">Total Questions</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
-                    <div className="text-3xl font-bold text-emerald-600 mb-2">{stats.correctCount}</div>
-                    <div className="text-sm text-emerald-700 font-medium">Correct</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
-                    <div className="text-3xl font-bold text-red-600 mb-2">{stats.wrongCount}</div>
-                    <div className="text-sm text-red-700 font-medium">Wrong</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
-                    <div className="text-3xl font-bold text-amber-600 mb-2">{stats.timeoutCount}</div>
-                    <div className="text-sm text-amber-700 font-medium">Timeouts</div>
-                  </div>
-                </div>
-              </div>
-
               {/* Performance Chart */}
               <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
                 <div className="flex items-center justify-between mb-6">
@@ -374,6 +358,231 @@ function EntranceQuizUserHistory() {
                   <div className="text-sm font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
                     Average: {formatTime(Math.round(stats.averageTime))}
                   </div>
+                </div>
+              </div>
+
+              {/* Quiz Summary */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <BarChart3 className="h-6 w-6 mr-3 text-purple-600" />
+                  Quiz Summary
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="text-center p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+                    <div className="text-3xl font-bold text-slate-900 mb-2">{stats.totalQuestions}</div>
+                    <div className="text-sm text-slate-600 font-medium">Total Questions</div>
+                  </div>
+                  <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
+                    <div className="text-3xl font-bold text-emerald-600 mb-2">{stats.correctCount}</div>
+                    <div className="text-sm text-emerald-700 font-medium">Correct</div>
+                  </div>
+                  <div className="text-center p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
+                    <div className="text-3xl font-bold text-red-600 mb-2">{stats.wrongCount}</div>
+                    <div className="text-sm text-red-700 font-medium">Wrong</div>
+                  </div>
+                  <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
+                    <div className="text-3xl font-bold text-amber-600 mb-2">{stats.timeoutCount}</div>
+                    <div className="text-sm text-amber-700 font-medium">Timeouts</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Question Review Section */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <BookOpen className="h-6 w-6 mr-3 text-purple-600" />
+                  Question Review ({allQuestions.length} questions)
+                </h2>
+                
+                {/* Filter Tabs */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <button
+                    onClick={() => setSelectedFilter('all')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      selectedFilter === 'all'
+                        ? 'bg-purple-600 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    All ({allQuestions.length})
+                  </button>
+                  <button
+                    onClick={() => setSelectedFilter('correct')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      selectedFilter === 'correct'
+                        ? 'bg-emerald-600 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Correct ({allQuestions.filter(q => q.isCorrect).length})
+                  </button>
+                  <button
+                    onClick={() => setSelectedFilter('wrong')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      selectedFilter === 'wrong'
+                        ? 'bg-red-600 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Wrong ({allQuestions.filter(q => !q.isCorrect).length})
+                  </button>
+                  <button
+                    onClick={() => setSelectedFilter('timeout')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      selectedFilter === 'timeout'
+                        ? 'bg-amber-600 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Timeout ({allQuestions.filter(q => q.isTimeOut).length})
+                  </button>
+                </div>
+
+                <div className="max-h-[800px] overflow-y-auto pr-2 space-y-6">
+                  {allQuestions
+                    .filter(question => {
+                      switch (selectedFilter) {
+                        case 'correct':
+                          return question.isCorrect;
+                        case 'wrong':
+                          return !question.isCorrect;
+                        case 'timeout':
+                          return question.isTimeOut;
+                        default:
+                          return true; // 'all'
+                      }
+                    })
+                    .map((question, index) => (
+                    <div
+                      key={question.id}
+                      className={`p-6 rounded-xl border-2 transition-all ${
+                        question.isCorrect
+                          ? "border-emerald-200 bg-emerald-50"
+                          : "border-red-200 bg-red-50"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                              question.isCorrect ? "bg-emerald-500" : "bg-red-500"
+                            }`}
+                          >
+                            {index + 1}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                question.difficulty === "easy"
+                                  ? "bg-green-100 text-green-700"
+                                  : question.difficulty === "medium"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {question.difficulty}
+                            </span>
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                              {question.subjectName}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-gray-500">
+                            Time: {formatTime(question.timeSpent)}
+                          </div>
+                          {question.isTimeOut && (
+                            <div className="text-xs text-amber-600 font-medium">Timeout</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                          {question.question}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {question.options.map((option, optionIndex) => (
+                            <div
+                              key={optionIndex}
+                              className={`p-3 rounded-lg border-2 transition-all ${
+                                option === question.correctAnswer
+                                  ? "border-emerald-300 bg-emerald-100"
+                                  : option === question.userAnswer && !question.isCorrect
+                                  ? "border-red-300 bg-red-100"
+                                  : "border-gray-200 bg-white"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
+                                    option === question.correctAnswer
+                                      ? "bg-emerald-500 text-white"
+                                      : option === question.userAnswer && !question.isCorrect
+                                      ? "bg-red-500 text-white"
+                                      : "bg-gray-200 text-gray-600"
+                                  }`}
+                                >
+                                  {String.fromCharCode(65 + optionIndex)}
+                                </div>
+                                <span className="text-gray-800">{option}</span>
+                                {option === question.correctAnswer && (
+                                  <CheckCircle className="h-5 w-5 text-emerald-600 ml-auto" />
+                                )}
+                                {option === question.userAnswer && !question.isCorrect && (
+                                  <XCircle className="h-5 w-5 text-red-600 ml-auto" />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-700">Your Answer:</span>
+                          <span
+                            className={`px-2 py-1 rounded ${
+                              question.isCorrect
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {question.userAnswer}
+                          </span>
+                        </div>
+                        {!question.isCorrect && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-700">Correct Answer:</span>
+                            <span className="px-2 py-1 rounded bg-emerald-100 text-emerald-700">
+                              {question.correctAnswer}
+                            </span>
+                          </div>
+                        )}
+                        {question.hint && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-700">Hint:</span>
+                            <span className="px-2 py-1 rounded bg-blue-100 text-blue-700">
+                              {question.hint}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {question.tags && question.tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {question.tags.map((tag, tagIndex) => (
+                            <span
+                              key={tagIndex}
+                              className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -469,7 +678,7 @@ function EntranceQuizUserHistory() {
         </div>
 
         <div className="space-y-8">
-          {validHistoryData.map((history: UserQuizQuestionHistory) => {
+          {validHistoryData.map((history: UserQuizResultHistory) => {
             const stats = calculateHistoryStats(history)
             return (
               <div

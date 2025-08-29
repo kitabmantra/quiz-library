@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { quizStorage } from '@/lib/utils/quiz-storage'
 import { useQuizStore } from '@/lib/store/useQuizStore'
+import { useQueryClient } from '@tanstack/react-query'
 
 
 interface QuizResultsProps {
@@ -29,6 +30,7 @@ export const QuizResults: React.FC<QuizResultsProps> = ({
   onNewQuiz,
 }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   // Debug: Log the props
   console.log('QuizResults Props:', { questions, answers, score, totalTime });
   console.log('Answers array:', answers);
@@ -208,7 +210,7 @@ export const QuizResults: React.FC<QuizResultsProps> = ({
       const res = await createUserHistory(quizResults)
       if(res.success && res.message){
         toast.success(res.message || 'Quiz results saved successfully!')
-        
+        queryClient.invalidateQueries({ queryKey: ['get-user-past-history'] })
         // Clear all quiz-related data
         quizStorage.clearAllQuizData();
         localStorage.removeItem('quiz_results');
@@ -226,9 +228,9 @@ export const QuizResults: React.FC<QuizResultsProps> = ({
         sessionStorage.setItem("quiz_recently_cleared", "true");
         
         // Show success message and redirect
-        toast.success('Redirecting to category selection... You can view your latest quiz results there!');
         
         // Redirect to category selection
+
         setTimeout(() => {
           router.push('/quizzes/academic/category-selection');
         }, 2000);
