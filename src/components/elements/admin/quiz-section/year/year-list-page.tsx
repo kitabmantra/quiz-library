@@ -16,6 +16,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Search, Calendar, TrendingUp, AlertCircle, X, RefreshCw, ArrowLeft, Clock, Filter, Eye, Edit, Trash2 } from "lucide-react"
 import { toast } from "react-hot-toast"
@@ -106,6 +116,7 @@ function YearListpage() {
   const [sortBy, setSortBy] = useState<SortOption>("name-asc")
   const [editingYear, setEditingYear] = useState<YearResponse | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [deletingYear, setDeletingYear] = useState<YearResponse | null>(null)
   const queryClient = useQueryClient()
   const router = useRouter()
 
@@ -239,16 +250,25 @@ function YearListpage() {
   }, [years])
 
   // Action handlers
-  const handleDelete = useCallback(
-    async (year: YearResponse) => {
+  const handleDeleteClick = useCallback(
+    (year: YearResponse) => {
+      setDeletingYear(year)
+    },
+    []
+  )
+
+  const handleDeleteConfirm = useCallback(
+    async () => {
+      if (!deletingYear) return
+      
       try {
         setDeleting(true)
         const deleteData: DeleteYearRequestType = {
-          id: year.id,
+          id: deletingYear.id,
         }
         const res = await deleteYear(deleteData)
         if (res.success) {
-          toast.success(`"${year.yearName}" deleted successfully`)
+          toast.success(`"${deletingYear.yearName}" deleted successfully`)
           // Invalidate with the correct query key
           queryClient.invalidateQueries({ queryKey: ["get-academic-year", "academic", levelName, facultyName] })
         } else {
@@ -259,10 +279,15 @@ function YearListpage() {
         console.error("Error deleting year:", error)
       } finally {
         setDeleting(false)
+        setDeletingYear(null)
       }
     },
-    [queryClient, levelName, facultyName]
+    [deletingYear, queryClient, levelName, facultyName]
   )
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeletingYear(null)
+  }, [])
 
   const handleUpdate = useCallback(
     (year: YearResponse) => {
@@ -637,6 +662,38 @@ function YearListpage() {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Alert Dialog */}
+      <AlertDialog open={!!deletingYear} onOpenChange={(open) => !open && setDeletingYear(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Year</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <span className="font-semibold text-red-600">"{deletingYear?.yearName.replace(/-/g, " ")}"</span>? 
+              This action cannot be undone and will permanently remove this year and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel} disabled={deleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Deleting...
+                </div>
+              ) : (
+                "Delete Year"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex-1 overflow-hidden">
         <div className="max-w-screen-2xl mx-auto h-full">
           {isLoading ? (
@@ -737,7 +794,7 @@ function YearListpage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(year)}
+                            onClick={() => handleDeleteClick(year)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -782,7 +839,7 @@ function YearListpage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(year)}
+                            onClick={() => handleDeleteClick(year)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="w-4 h-4" />
