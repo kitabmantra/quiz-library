@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import QueryProvider from "@/lib/providers/query-provider";
 import UserStoreWrapper from "@/components/elements/UserStoreWrapper";
+import { Analytics } from '@vercel/analytics/next';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -34,6 +36,7 @@ export default function RootLayout({
             
             {children}
             <Toaster />
+            <Analytics />
           </UserStoreWrapper>
         </QueryProvider>
       </body>
